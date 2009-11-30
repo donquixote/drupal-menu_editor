@@ -1,0 +1,6 @@
+name = Menu Editor - Node creation
+description = Menu item placeholders for node creation.
+package = Menu
+core = 6.x
+dependencies[] = menu_editor
+
