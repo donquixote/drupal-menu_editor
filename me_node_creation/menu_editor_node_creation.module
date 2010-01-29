@@ -140,6 +140,7 @@ function menu_editor_node_creation_create_node_access($type) {
 
 function menu_editor_node_creation_menu_editor_placeholders() {
   $placeholders = array(
+    '<new>' => 'mlid/%mlid/under-construction',
     '<new page>' => NULL
   );
   foreach (node_get_types() as $type_name => $type_info) {
@@ -150,7 +151,6 @@ function menu_editor_node_creation_menu_editor_placeholders() {
   if (!isset($placeholders['<new page>'])) {
     unset($placeholders['<new page>']);
   }
-  $placeholders['<new>'] = "mlid/%mlid/under-construction";
   return $placeholders;
 }
 
