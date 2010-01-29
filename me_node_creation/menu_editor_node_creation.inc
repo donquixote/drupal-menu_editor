@@ -7,6 +7,9 @@ function menu_editor_node_creation_create_node($type, $mlid) {
   menu_editor_node_creation_create_node_values($type, $mlid);
 
   global $user;
+  if (is_array($mlid)) {
+    $mlid = $mlid['mlid'];
+  }
   $mlid = (int)$mlid;
   
   $types = node_get_types();
@@ -41,6 +44,11 @@ function menu_editor_node_creation_form_alter(&$form, &$form_state) {
   if($form['#id'] != 'node-form') {
     return;
   }
+  $form['menu'] = array(
+    '#type' => 'markup',
+    '#value' => t('The created node will automatically be inserted into the chosen menu item.'),
+  );
+  
   list($type, $mlid) = menu_editor_node_creation_create_node_values();
   if (!isset($type) || !isset($mlid)) {
     return;

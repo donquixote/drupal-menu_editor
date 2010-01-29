@@ -1,7 +1,6 @@
 <?php
 
 
-
 /**
  * Form for editing an entire menu tree at once.
  *
@@ -9,13 +8,15 @@
  * relevant operations.
  */
 function menu_editor_overview_form(&$form_state, $menu) {
-  global $menu_admin, $language;
+  
+  global $menu_admin;
   $sql = "
     SELECT
       m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments,
       m.page_callback, m.page_arguments, m.title, m.title_callback, m.title_arguments,
       m.type, m.description, ml.*
-    FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
+    FROM {menu_links} ml
+    LEFT JOIN {menu_router} m ON m.path = ml.router_path
     WHERE ml.menu_name = '%s'
     ORDER BY p1 ASC, p2 ASC, p3 ASC, p4 ASC, p5 ASC, p6 ASC, p7 ASC, p8 ASC, p9 ASC";
   $result = db_query($sql, $menu['menu_name']);
@@ -32,7 +33,8 @@ function menu_editor_overview_form(&$form_state, $menu) {
     $language_options = array('' => t('All languages')) + locale_language_list('name');
     $form['#_language_options'] = $language_options;
   }
-  _menu_editor_overview_tree_form($form, $tree, $language_options);
+  
+  $max_root_weight = _menu_editor_overview_tree_form($form, $form_state, $tree, $language_options);
   
   // default values for all new menu items..
   $default_values = array(
@@ -43,7 +45,7 @@ function menu_editor_overview_form(&$form_state, $menu) {
     'weight' => 0,
     // 'mlid' => NULL,  // this is different for every single one
     'plid' => 0,
-    'language' => $language->language,
+    'language' => '',
   );
   
   foreach (module_invoke_all('menu_editor_placeholders') as $placeholder_code => $placeholder_path) {
@@ -56,8 +58,9 @@ function menu_editor_overview_form(&$form_state, $menu) {
   for ($i=0; $i<8; ++$i) {
     // new menu item
   	$default_values['mlid'] = 'new' . $i;
-    $item_key = 'mlid:new'.$i;
+    $item_key = 'mlid-new'.$i;
   	$form[$item_key] = _menu_editor_overview_tree_form_item('new'.$i, $default_values, $language_options);
+  	$form[$item_key]['weight']['#default_value'] = $max_root_weight + $i + 1;
   	$form[$item_key]['#item'] = array();
   	$form[$item_key]['#attributes'] = array('class' => 'menu-new');
   	$form[$item_key]['drag']['#value'] = t('New menu item');
@@ -80,21 +83,29 @@ function menu_editor_overview_form(&$form_state, $menu) {
 /**
  * Recursive helper function for menu_overview_form().
  */
-function _menu_editor_overview_tree_form(&$form, $tree, $language_options) {
+function _menu_editor_overview_tree_form(&$form, &$form_state, $tree, $language_options) {
+  $max_root_weight = 0;
   foreach ($tree as $data) {
     $title = '';
     $item = $data['link'];
     // Don't show callbacks; these have $item['hidden'] < 0.
     if ($item && $item['hidden'] >= 0) {
-      $item_key = 'mlid:'. $item['mlid'];
+      $item_key = 'mlid-'. $item['mlid'];
+      $weight = isset($form_state[$item_key]['weight']) ? $form_state[$item_key]['weight'] : $item['weight'];
+      $plid = isset($form_state[$item_key]['plid']) ? $form_state[$item_key]['plid'] : $item['plid'];
+      
+      if (!$plid && $weight > $max_root_weight) {
+        // this is a root level item
+        $max_root_weight = $weight;
+      }
       
       $default_values = array(
         'link_title' => $item['link_title'],
         'link_path' => $item['link_path'],
         'hidden'   => !$item['hidden'],
         'expanded' => $item['expanded'],
-        'weight'   => isset($form_state[$item_key]['weight']) ? $form_state[$item_key]['weight'] : $item['weight'],
-        'plid'     => isset($form_state[$item_key]['plid']) ? $form_state[$item_key]['plid'] : $item['plid'],
+        'weight'   => $weight,
+        'plid'     => $plid,
         'language' => '' . @$item['options']['langcode'],
       );
       
@@ -116,20 +127,16 @@ function _menu_editor_overview_tree_form(&$form, $tree, $language_options) {
     
     // process child elements
     if ($data['below']) {
-      _menu_editor_overview_tree_form($form, $data['below'], $language_options);
+      _menu_editor_overview_tree_form($form, $form_data, $data['below'], $language_options);
     }
   }
-  return $form;
+  return $max_root_weight;
 }
+
 
 function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $language_options = NULL) {
   
-  static $placeholders;
-  if (!isset($placeholders)) {
-    $placeholders = module_invoke_all('menu_editor_placeholders');
-  }
-  
-  foreach ($placeholders as $code => $path) {
+  foreach (menu_editor_get_placeholders() as $code => $path) {
     if (str_replace('%mlid', $item_mlid, $path) == $default_values['link_path']) {
       $default_values['link_path'] = $code;
     }
@@ -178,14 +185,63 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $lang
 
 
 function menu_editor_overview_form_validate($form, &$form_state) {
+  $form_values = &$form_state['values'];
+  
+  // Check existing items.
+  foreach (element_children($form) as $item_key) {
+    $element = &$form[$item_key];
+    if (isset($element['link_path'])) {
+      menu_editor_validate_item($element, $element['link_path']['#value'], $item_key . '][');
+    }
+  }
+  
   // allow new items to be dynamically added via javascript,
   // that have not been in the form originally.
   foreach ($form['#post'] as $item_key => $item) {
-    if (preg_match('/^mlid:new\d+$/', $item_key)) {
+    if (preg_match('/^mlid-new\d+$/', $item_key)) {
       if (menu_editor_overview_form_validate_new_item($item)) {
-        $form_state['values'][$item_key] = $item;
+        $form_values[$item_key] = $item;
       }
     }
+  }
+}
+
+
+/**
+ * Validate form values for a menu link being added or edited.
+ */
+function menu_editor_validate_item(&$element, $link_path, $error_key_prefix) {
+  $placeholders = menu_editor_get_placeholders();
+  if (isset($placeholders[$link_path])) {
+    // it would be hard to check access,
+    // because we don't necessarily know the mlid.
+    // Thus, we simply grant access for all placeholders.
+    return;
+  }
+  
+  if ($element['link_path']['#default_value'] == $link_path) {
+    // link_path is the only field that we check,
+    // and we don't complain about existing link paths.
+    return;
+  }
+  $item = $element['#item'];
+  $normal_path = drupal_get_normal_path($link_path);
+  $item['link_path'] = $normal_path;
+  
+  if (!menu_path_is_external($normal_path)) {
+    
+    $parsed_link = parse_url($normal_path);
+    
+    if (isset($parsed_link['query'])) {
+      $item['options']['query'] = $parsed_link['query'];
+    }
+    if (isset($parsed_link['fragment'])) {
+      $item['options']['fragment'] = $parsed_link['fragment'];
+    }
+    $item['link_path'] = $parsed_link['path'];
+  }
+  if (!trim($item['link_path']) || !menu_valid_path($item)) {
+    form_set_error($error_key_prefix . 'link_path', t("The path '@link_path' is either invalid or you do not have access to it.", array('@link_path' => $item['link_path'])));
   }
 }
 
@@ -211,7 +267,6 @@ function menu_editor_overview_form_validate_new_item($item) {
  */
 function menu_editor_overview_form_submit($form, &$form_state) {
   
-  $multilanguage = module_exists('i18nmenu');
   // When dealing with saving menu items, the order in which these items are
   // saved is critical. If a changed child item is saved before its parent,
   // the child item could be saved with an invalid path past its immediate
@@ -225,6 +280,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
   
   $updated_items = array();
   $fields = array('expanded', 'weight', 'plid', 'link_title', 'link_path');
+  
   foreach ($form_values as $item_key => $v) {
     if (isset($form[$item_key]['#item'])) {
       $element = $form[$item_key];
@@ -280,6 +336,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
   // Save all our changed items to the database.
   $errors = array();
   $mlids = array();
+  
   foreach ($updated_items as $item_key => $item) {
     $item['customized'] = 1;
     
@@ -324,21 +381,28 @@ function menu_editor_overview_form_submit($form, &$form_state) {
     
     // drupal_set_message('<pre>' . print_r($item, true) . '</pre>');
     if ($item['plid'] && !is_numeric($item['plid'])) {
-      if (isset($mlids["mlid:$item[plid]"])) {
-        $item['plid'] = $mlids["mlid:$item[plid]"];
+      if (isset($mlids["mlid-$item[plid]"])) {
+        $item['plid'] = $mlids["mlid-$item[plid]"];
       }
       else {
         unset($item['plid']);
       }
     }
     $mlid = menu_link_save($item);
+    
     if (is_numeric($mlid)) {
       // remember as a plid for child items
       $mlids[$item_key] = $mlid;
       if (isset($link_path_placeholder)) {
         // overwrite the dummy link path
         $link_path = str_replace('%mlid', $item['mlid'], $link_path_placeholder);
+        
         menu_link_save($item);
+      }
+      
+      if (module_exists('i18nmenu')) {
+        // Ensure we have a menu item to work with.
+        _i18nmenu_update_item($item);
       }
     }
     else {
@@ -363,7 +427,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
 function theme_menu_editor_overview_form($form) {
   drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
   global $language;
-  $multilanguage = module_exists('i18nmenu');
+  $i18nmenu = module_exists('i18nmenu');
   drupal_add_tabledrag('menu-overview', 'match', 'parent', 'menu-plid', 'menu-plid', 'menu-mlid', TRUE, MENU_MAX_DEPTH - 1);
   drupal_add_tabledrag('menu-overview', 'order', 'sibling', 'menu-weight');
 
@@ -375,12 +439,13 @@ function theme_menu_editor_overview_form($form) {
     array('data' => t('Expanded'), 'class' => 'checkbox'),
     t('Weight')
   );
-  if ($multilanguage) {
+  if ($i18nmenu) {
     $header[] = t('Language');
   }
   $header[] = t('Delete');
 
   $rows = array();
+  $items = array();
   foreach (element_children($form['sections']) as $section_key) {
     foreach (element_children($form['sections'][$section_key]) as $item_key) {
       $element = $form['sections'][$item_key];
@@ -410,31 +475,40 @@ function theme_menu_editor_overview_form($form) {
       foreach (array('link_title', 'link_path', 'hidden', 'expanded') as $i => $key) {
         $element[$key]['#attributes']['tabindex'] = $i+2;
       }
+      $element['link_path']['#attributes']['tabindex'] = 2;
 
-      $row = array();
-      $row[] = theme('indentation', $element['#item']['depth'] - 1) . drupal_render($element['drag']);
-      $row[] = array('data' => drupal_render($element['link_title']), 'class' => 'title-edit');
-      $row[] = array('data' => drupal_render($element['link_path']), 'class' => 'path-edit');
-      $row[] = array('data' => drupal_render($element['hidden']), 'class' => 'checkbox');
-      $row[] = array('data' => drupal_render($element['expanded']), 'class' => 'checkbox');
-      $row[] = drupal_render($element['weight']) . drupal_render($element['plid']) . drupal_render($element['mlid']);
-      if ($multilanguage) {
-        $row[] = array('data' => drupal_render($element['language']), 'class' => 'select');
+      $cells = array();
+      $cells['drag'] = theme('indentation', $element['#item']['depth'] - 1) . drupal_render($element['drag']);
+      $cells['link_title'] = array('data' => drupal_render($element['link_title']), 'class' => 'title-edit');
+      $cells['link_path'] = array('data' => drupal_render($element['link_path']), 'class' => 'path-edit');
+      $cells['hidden'] = array('data' => drupal_render($element['hidden']), 'class' => 'checkbox');
+      $cells['expanded'] = array('data' => drupal_render($element['expanded']), 'class' => 'checkbox');
+      $cells['mlid'] = drupal_render($element['weight']) . drupal_render($element['plid']) . drupal_render($element['mlid']);
+      if ($i18nmenu) {
+        $cells['language'] = array('data' => drupal_render($element['language']), 'class' => 'select');
       }
-      $row[] = array('data' => drupal_render($element['delete']), 'class' => 'checkbox delete-checkbox');
+      $cells['delete'] = array('data' => drupal_render($element['delete']), 'class' => 'checkbox delete-checkbox');
       
-      $row = array_merge(array('data' => $row), $element['#attributes']);
+      $row = array_merge(array('data' => $cells), $element['#attributes']);
       $row['class'] = !empty($row['class']) ? $row['class'] .' draggable' : 'draggable';
-      if ($multilanguage) {
+      if ($i18nmenu) {
         $langcode = $element['language']['#default_value'];
         $row['class'] .= ($langcode) ? ' langcode-'.$langcode : ' all-languages';
         $row['class'] .= ($langcode == $language->language) ? ' active-language' : '';
       }
-      $rows[] = $row;
+      $rows[$item_key] = $row;
+      if (isset($element['#item'])) {
+        $items[$item_key] = $element['#item'];
+      }
     }
   }
   $output = '';
   if ($rows) {
+    // allow other modules to change the table data.
+    foreach (module_implements('menu_editor_overview_table_alter') as $module) {
+      $function = $module . '_menu_editor_overview_table_alter';
+      $function($header, $rows, $items);
+    }
     $output .= theme('table', $header, $rows, array('id' => 'menu-overview'));
   }
   $output .= drupal_render($form);
