@@ -425,7 +425,8 @@ function menu_editor_overview_form_submit($form, &$form_state) {
  * @ingroup themeable
  */
 function theme_menu_editor_overview_form($form) {
-  drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
+  // drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
+  drupal_add_js(drupal_get_path('module', 'menu_editor') . '/menu_editor.js');
   global $language;
   $i18nmenu = module_exists('i18nmenu');
   drupal_add_tabledrag('menu-overview', 'match', 'parent', 'menu-plid', 'menu-plid', 'menu-mlid', TRUE, MENU_MAX_DEPTH - 1);
@@ -442,7 +443,7 @@ function theme_menu_editor_overview_form($form) {
   if ($i18nmenu) {
     $header[] = t('Language');
   }
-  $header[] = t('Delete');
+  $header[] = array('data'  => t('Delete'), 'class' => 'delete-checkbox');
 
   $rows = array();
   $items = array();
@@ -487,7 +488,7 @@ function theme_menu_editor_overview_form($form) {
       if ($i18nmenu) {
         $cells['language'] = array('data' => drupal_render($element['language']), 'class' => 'select');
       }
-      $cells['delete'] = array('data' => drupal_render($element['delete']), 'class' => 'checkbox delete-checkbox');
+      $cells['delete'] = array('data' => drupal_render($element['delete']), 'class' => 'delete-checkbox');
       
       $row = array_merge(array('data' => $cells), $element['#attributes']);
       $row['class'] = !empty($row['class']) ? $row['class'] .' draggable' : 'draggable';
