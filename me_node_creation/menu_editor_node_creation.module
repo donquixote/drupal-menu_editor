@@ -63,7 +63,7 @@ function menu_editor_under_construction($item) {
 EOT;
   } else {
     return <<<EOT
-      <p>
+      <p>$txt</p>
 EOT;
   }
 }
