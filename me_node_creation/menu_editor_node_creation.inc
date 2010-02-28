@@ -76,7 +76,10 @@ function menu_editor_node_creation_node_form_submit($form, &$form_state) {
   }
   $q = db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $mlid);
   if ($menu_item = db_fetch_array($q)) {
-    if ($menu_item['router_path'] == 'node/add/%/mlid/%') {
+    if (
+      $menu_item['link_path'] == "node/add/$type/mlid/$mlid" ||
+      $menu_item['link_path'] == "mlid/$mlid/under-construction"
+    ) {
       $menu_item['link_path'] = "node/$nid";
       $menu_item['router_path'] = "node/%";
       $menu_item['options'] = array();
