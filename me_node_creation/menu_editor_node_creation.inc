@@ -44,30 +44,36 @@ function menu_editor_node_creation_form_alter(&$form, &$form_state) {
   if($form['#id'] != 'node-form') {
     return;
   }
-  $form['menu'] = array(
-    '#type' => 'markup',
-    '#value' => t('The created node will automatically be inserted into the chosen menu item.'),
-  );
   
   list($type, $mlid) = menu_editor_node_creation_create_node_values();
   if (!isset($type) || !isset($mlid)) {
     return;
   }
+  
   $q = db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $mlid);
-  if ($menu_item = db_fetch_object($q)) {
-    $form['title']['#default_value'] = $menu_item->link_title;
-    $form['menu_editor_mlid'] = array(
-      '#type' => 'hidden',
-      '#default_value' => $mlid,
-    );
-    $form['buttons']['submit']['#submit'][] = 'menu_editor_node_creation_node_form_submit';
+  $menu_item = db_fetch_object($q);
+  if (!$menu_item) {
+    return;
   }
+  
+  $form['menu'] = array(
+    '#type' => 'markup',
+    '#value' => t('The created node will be associated with the chosen menu item (@mlid).', array('@mlid' => $mlid)),
+  );
+  
+  $form['title']['#default_value'] = $menu_item->link_title;
+  $form['menu_editor_mlid'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $mlid,
+  );
+  $form['buttons']['submit']['#submit'][] = 'menu_editor_node_creation_node_form_submit';
 }
 
 
 function menu_editor_node_creation_node_form_submit($form, &$form_state) {
   $mlid = $form_state['values']['menu_editor_mlid'];
   $nid = $form_state['nid'];
+  $type = $form['#node']->type;
   if (!$mlid || (int)$mlid != $mlid)  {
     return;
   }
