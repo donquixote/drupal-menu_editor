@@ -48,7 +48,7 @@ function menu_editor_overview_form(&$form_state, $menu) {
     'language' => '',
   );
   
-  foreach (module_invoke_all('menu_editor_placeholders') as $placeholder_code => $placeholder_path) {
+  foreach (menu_editor_get_placeholders() as $placeholder_code => $placeholder_path) {
     // take the first placeholder as default link path instead of <front>
     $default_values['link_path'] = $placeholder_code;
     break;
@@ -57,13 +57,13 @@ function menu_editor_overview_form(&$form_state, $menu) {
   
   for ($i=0; $i<8; ++$i) {
     // new menu item
-  	$default_values['mlid'] = 'new' . $i;
+    $default_values['mlid'] = 'new' . $i;
     $item_key = 'mlid-new'.$i;
-  	$form[$item_key] = _menu_editor_overview_tree_form_item('new'.$i, $default_values, $language_options);
-  	$form[$item_key]['weight']['#default_value'] = $max_root_weight + $i + 1;
-  	$form[$item_key]['#item'] = array();
-  	$form[$item_key]['#attributes'] = array('class' => 'menu-new');
-  	$form[$item_key]['drag']['#value'] = t('New menu item');
+    $form[$item_key] = _menu_editor_overview_tree_form_item('new'.$i, $default_values, $language_options);
+    $form[$item_key]['weight']['#default_value'] = $max_root_weight + $i + 1;
+    $form[$item_key]['#item'] = array();
+    $form[$item_key]['#attributes'] = array('class' => 'menu-new');
+    $form[$item_key]['drag']['#value'] = t('New menu item');
   }
   
   $form['#menu'] =  $menu;
@@ -98,10 +98,16 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree, $language_
         // this is a root level item
         $max_root_weight = $weight;
       }
-      
+      $path = $item['link_path'];
+      if (isset($item['options']['query'])) {
+        $path .= '?'. $item['options']['query'];
+      }
+      if (isset($item['options']['fragment'])) {
+        $path .= '#'. $item['options']['fragment'];
+      }
       $default_values = array(
         'link_title' => $item['link_title'],
-        'link_path' => $item['link_path'],
+        'link_path' => $path,
         'hidden'   => !$item['hidden'],
         'expanded' => $item['expanded'],
         'weight'   => $weight,
@@ -331,7 +337,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
   }
   
   // placeholders to change the link path
-  $placeholders = module_invoke_all('menu_editor_placeholders');
+  $placeholders = menu_editor_get_placeholders();
   
   // Save all our changed items to the database.
   $errors = array();

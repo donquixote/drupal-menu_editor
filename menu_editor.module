@@ -79,10 +79,7 @@ function menu_editor_get_placeholders() {
 }
 
 function menu_editor_get_path_for_placeholder($placeholder, $mlid) {
-  static $placeholders;
-  if (!isset($placeholders)) {
-    $placeholders = module_invoke_all('menu_editor_placeholders');
-  }
+  $placeholders = menu_editor_get_placeholders();
   if (isset($placeholders[$placeholder])) {
     return str_replace('%mlid', $mlid, $placeholders[$placeholder]);
   }
