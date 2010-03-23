@@ -40,6 +40,7 @@ function menu_editor_overview_form(&$form_state, $menu) {
   $default_values = array(
     'link_title' => '',
     'link_path' => '<front>',
+    'description' => '',
     'hidden' => true,
     'expanded' => false,
     'weight' => 0,
@@ -108,6 +109,7 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree, $language_
       $default_values = array(
         'link_title' => $item['link_title'],
         'link_path' => $path,
+        'description' => isset($item['options']['attributes']['title']) ? $item['options']['attributes']['title'] : '',
         'hidden'   => !$item['hidden'],
         'expanded' => $item['expanded'],
         'weight'   => $weight,
@@ -156,6 +158,10 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $lang
   $element['link_path'] = array(
     '#type' => 'textfield',
     '#size' => 25,
+  );
+  $element['description'] = array(
+    '#type' => 'textfield',
+    '#size' => 10,
   );
   $element['hidden'] = array(
     '#type' => 'checkbox',
@@ -285,7 +291,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
   $menu_name = $form['#menu']['menu_name'];
   
   $updated_items = array();
-  $fields = array('expanded', 'weight', 'plid', 'link_title', 'link_path');
+  $fields = array('expanded', 'weight', 'plid', 'link_title', 'link_path', 'description');
   
   foreach ($form_values as $item_key => $v) {
     if (isset($form[$item_key]['#item'])) {
@@ -332,6 +338,10 @@ function menu_editor_overview_form_submit($form, &$form_state) {
           $element['#item']['options']['langcode'] = $v['language'];
           $updated_items[$item_key] = $element['#item'];
         }
+      }
+      // description is a special case
+      if (isset($updated_items[$item_key]['description'])) {
+        $updated_items[$item_key]['options']['attributes']['title'] = $updated_items[$item_key]['description'];
       }
     }
   }
@@ -394,6 +404,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
         unset($item['plid']);
       }
     }
+    
     $mlid = menu_link_save($item);
     
     if (is_numeric($mlid)) {
@@ -431,21 +442,21 @@ function menu_editor_overview_form_submit($form, &$form_state) {
  * @ingroup themeable
  */
 function theme_menu_editor_overview_form($form) {
-  // drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
+  drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
   drupal_add_js(drupal_get_path('module', 'menu_editor') . '/menu_editor.js');
   global $language;
   $i18nmenu = module_exists('i18nmenu');
   drupal_add_tabledrag('menu-overview', 'match', 'parent', 'menu-plid', 'menu-plid', 'menu-mlid', TRUE, MENU_MAX_DEPTH - 1);
   drupal_add_tabledrag('menu-overview', 'order', 'sibling', 'menu-weight');
 
-  $header = array(
-    t('Menu item'),
-    t('Title'),
-    t('Path'),
-    array('data' => t('Enabled'), 'class' => 'checkbox'),
-    array('data' => t('Expanded'), 'class' => 'checkbox'),
-    t('Weight')
-  );
+  $header = array();
+  $header[] = t('Menu item');
+  $header[] = t('Title');
+  $header[] = t('Path');
+  $header[] = t('Descr.');
+  $header[] = array('data' => t('En.'), 'class' => 'checkbox');
+  $header[] = array('data' => t('Exp.'), 'class' => 'checkbox');
+  $header[] = t('Weight');
   if ($i18nmenu) {
     $header[] = t('Language');
   }
@@ -479,15 +490,19 @@ function theme_menu_editor_overview_form($form) {
       $element['plid']['#type'] = 'hidden';
       
       // Adjust tab index to allow vertical tabbing
-      foreach (array('link_title', 'link_path', 'hidden', 'expanded') as $i => $key) {
+      foreach (array('link_title', 'link_path', 'description', 'hidden', 'expanded') as $i => $key) {
         $element[$key]['#attributes']['tabindex'] = $i+2;
       }
       $element['link_path']['#attributes']['tabindex'] = 2;
 
       $cells = array();
-      $cells['drag'] = theme('indentation', $element['#item']['depth'] - 1) . drupal_render($element['drag']);
+      $cells['drag'] = array(
+        'data' => theme('indentation', $element['#item']['depth'] - 1) . drupal_render($element['drag']),
+        'class' => 'drag'
+      );
       $cells['link_title'] = array('data' => drupal_render($element['link_title']), 'class' => 'title-edit');
       $cells['link_path'] = array('data' => drupal_render($element['link_path']), 'class' => 'path-edit');
+      $cells['description'] = array('data' => drupal_render($element['description']), 'class' => 'description');
       $cells['hidden'] = array('data' => drupal_render($element['hidden']), 'class' => 'checkbox');
       $cells['expanded'] = array('data' => drupal_render($element['expanded']), 'class' => 'checkbox');
       $cells['mlid'] = drupal_render($element['weight']) . drupal_render($element['plid']) . drupal_render($element['mlid']);

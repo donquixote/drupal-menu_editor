@@ -1,12 +1,29 @@
 
-/*
-table#menu-overview tr.active-language {
-  background:#eeeeee;
+form#menu-editor-overview-form th {
+  white-space:nowrap;  /* we don't want linebreaks in the title cells */
 }
-table#menu-overview tr {
-  background:#e2e2e2;
+
+form#menu-editor-overview-form td.description,
+form#menu-editor-overview-form td.checkbox {
+  width:1em;  /* shrink to smallest possible width */
+  white-space:nowrap;
 }
-table#menu-overview tr.all-languages {
-  background:#eaeaea;
+
+form#menu-editor-overview-form td.title-edit .form-item,
+form#menu-editor-overview-form td.path-edit .form-item,
+form#menu-editor-overview-form td.description .form-item {
+  padding-right:4px;  /* compensate the 100% width */
+  position:relative;
 }
-*/
+
+form#menu-editor-overview-form td.title-edit input,
+form#menu-editor-overview-form td.path-edit input,
+form#menu-editor-overview-form td.description input,
+form#menu-editor-overview-form td.description textarea {
+  width:100%;
+}
+
+form#menu-editor-overview-form td.description textarea {
+  height:60px;
+}
+
