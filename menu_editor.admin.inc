@@ -161,6 +161,7 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $lang
   );
   $element['description'] = array(
     '#type' => 'textfield',
+	'#maxlength' => null,
     '#size' => 10,
   );
   $element['hidden'] = array(
