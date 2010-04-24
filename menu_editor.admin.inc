@@ -160,9 +160,10 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $lang
     '#size' => 25,
   );
   $element['description'] = array(
-    '#type' => 'textfield',
-	'#maxlength' => null,
-    '#size' => 10,
+    '#type' => 'textarea',
+    '#cols' => 8,
+    '#rows' => 1,
+    '#resizable' => FALSE,
   );
   $element['hidden'] = array(
     '#type' => 'checkbox',
@@ -454,7 +455,7 @@ function theme_menu_editor_overview_form($form) {
   $header[] = t('Menu item');
   $header[] = t('Title');
   $header[] = t('Path');
-  $header[] = t('Descr.');
+  $header[] = array('data' => t('Descr.'), 'class' => 'description');
   $header[] = array('data' => t('En.'), 'class' => 'checkbox');
   $header[] = array('data' => t('Exp.'), 'class' => 'checkbox');
   $header[] = t('Weight');

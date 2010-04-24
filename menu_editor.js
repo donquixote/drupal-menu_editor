@@ -1,49 +1,63 @@
 $(document).ready(function(){
   $('#menu-editor-overview-form #menu-overview').each(function(){
     
+    // table elements
+    var table = $(this);
+    var tbody = $('tbody', this);
+    
     // delete all checkbox
-    var th_delete = $('thead th.delete-checkbox', this);
-    th_delete.html('<span><input type="checkbox" class="master-delete-checkbox" />&nbsp;'+th_delete.html()+'</span>');
-    $('thead th.delete-checkbox', this).css('white-space', 'nowrap');
-    var td_checkboxes = $('tbody td.delete-checkbox :checkbox', this);
-    $('thead th.delete-checkbox :checkbox', this).change(function(){
-      td_checkboxes.attr('checked', $(this).attr('checked'));
-    });
+    (function(){
+      var th_delete = $('thead th.delete-checkbox', table);
+      var master_delete_checkbox = $('<input type="checkbox" class="master-delete-checkbox" />');
+      th_delete.html('<span>&nbsp;'+th_delete.html()+'</span>');
+      th_delete.prepend(master_delete_checkbox);
+      
+      var onchange = function(){
+        var checked_now = master_delete_checkbox.attr('checked');
+        $('tbody td.delete-checkbox :checkbox', table).attr('checked', checked_now);
+      };
+      
+      master_delete_checkbox.change(onchange);
+      
+      // IE does not trigger the change event..
+      if ($.browser.msie) {
+        master_delete_checkbox.click(onchange);
+      }
+    })();
     
-    // freeze width of first column
-    var w = $('td.drag', this).width();
-    $('td.drag', this).each(function(){
-      $(this).css('width', w+'px');
-    });
+    // freeze width of first column (currently disabled)
+    if (false) {
+      var w = $('td.drag', this).width();
+      $('td.drag', this).each(function(){
+        $(this).css('width', w+'px');
+      });
+    }
     
-    // replace description fields with textareas
-    var h = $('td.description input', this).height();
-    $('td.description input', this).each(function(){
-      var textarea =
-        $('<textarea rows="1"></textarea>')
-        .css('height', h+'px')
-        .css('padding-top', $(this).css('padding-top'))
-        .css('padding-bottom', $(this).css('padding-bottom'))
-        // .css('margin', '0')
-        // .css('display', $(this).css('display'))
-        .val($(this).val())
-        .attr('name', $(this).attr('name'))
-        .attr('tabindex', $(this).attr('tabindex'))
-      ;
-      $(this).replaceWith(textarea);
-    });
+    // get reference css for textareas
+    var ref_input = $('td.path-edit input', this);
+    var h = ref_input.height();
+    var ref_css = {
+      'height': h + 'px',
+      'padding-top': ref_input.css('padding-top'),
+      'padding-bottom': ref_input.css('padding-bottom')
+    };
+    var div_ref_height = ref_input.parent().height();
+    
+    // adjust height of existing description textareas
+    $('td.description textarea', this).css(ref_css);
+    // this is necessary because of the vertical-align:middle
+    $('td.description div.form-item', this).css('height', div_ref_height+'px');
     
     // description column resizing
-    var description_cells = $('td.description', this);
-    var description_textareas = $('td.description textarea', this);
-    description_textareas.focus(function(){
-      description_cells.css('width', '250px');
-      description_textareas.css('height', h+'px');
-      $(this).css('height', '');
+    $('td.description textarea', this).focus(function(){
+      table.addClass('focus-description-column');
+      $('tr.focus', table).removeClass('focus');
+      $(this).parents('tr').slice(0, 1).addClass('focus');
     });
     $('td:not(.description) input', this).focus(function(){
-      description_cells.css('width', '');
-      description_textareas.css('height', h+'px');
+      table.removeClass('focus-description-column');
+      $('tr.focus', table).removeClass('focus');
+      $(this).parents('tr').slice(0, 1).addClass('focus');
     });
   });
 });
