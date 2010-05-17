@@ -317,6 +317,10 @@ function menu_editor_overview_form_submit($form, &$form_state) {
         // delete existing item
         if (is_numeric($v['mlid'])) {
           menu_link_delete($v['mlid']);
+          // patch from http://drupal.org/node/786230#comment-2911158
+          if (module_exists('i18nmenu')) {
+            _i18nmenu_delete_item($v['mlid']);
+          }
         }
         continue;
       } else {
@@ -421,6 +425,8 @@ function menu_editor_overview_form_submit($form, &$form_state) {
       
       if (module_exists('i18nmenu')) {
         // Ensure we have a menu item to work with.
+        // patch from http://drupal.org/node/786230#comment-2911038
+        $item['parent'] = $item['menu_name'] .':'. $item['plid'];
         _i18nmenu_update_item($item);
       }
     }
