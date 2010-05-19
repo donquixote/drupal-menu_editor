@@ -30,7 +30,7 @@ function menu_editor_perm() {
 
 function menu_editor_form_access($menu) {
   return
-    user_access('administer menus') ||
+    user_access('administer menu') ||
     user_access("menu edit $menu[menu_name]")
   ;
 }
