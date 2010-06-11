@@ -172,8 +172,12 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $lang
     '#type' => 'checkbox',
   );
   $element['weight'] = array(
-    '#type' => 'weight',
-    '#delta' => 50,
+    // The original form uses a select box for the weight.
+    // We use a textfield instead, to save memory on server side
+    // and to reduce page size.
+    '#type' => 'textfield',
+    '#size' => 4,
+    '#element_validate' => array('_menu_editor_valid_weight'),
   );
   $element['mlid'] = array(
     '#type' => 'hidden',
@@ -195,6 +199,20 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $lang
     }
   }
   return $element;
+}
+
+
+/**
+ * Weight textfield validation function
+ * Stolen from http://drupal.org/project/tiny_menu_editor
+ * Big thanks to Dmitriy.trt
+ */
+function _menu_editor_valid_weight($element, &$form_state) {
+  if ((isset($element['#value']) && $element['#value'] !== '') || !empty($element['#required'])) {
+    if (!preg_match('/^\-?\d+$/', $element['#value'])) {
+       form_error($element, t('Weight has to be an integer value.'));
+    }
+  }
 }
 
 
