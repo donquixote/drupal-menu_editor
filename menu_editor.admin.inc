@@ -403,12 +403,21 @@ function menu_editor_overview_form_submit($form, &$form_state) {
       $link_path = drupal_get_normal_path($link_path);
       if (!menu_path_is_external($link_path)) {
         $parsed_link = parse_url($link_path);
+        
         if (isset($parsed_link['query'])) {
           $item['options']['query'] = $parsed_link['query'];
         }
+        else {
+          unset($item['options']['query']);
+        }
+        
         if (isset($parsed_link['fragment'])) {
           $item['options']['fragment'] = $parsed_link['fragment'];
         }
+        else {
+          unset($item['options']['fragment']);
+        }
+        
         if ($link_path != $parsed_link['path']) {
           $link_path = $parsed_link['path'];
         }
