@@ -36,7 +36,7 @@ function menu_editor_path_autocomplete_menu() {
  * @return
  *   List of elements with path as key.
  */
-function menu_editor_path_autocomplete($string) {
+function menu_editor_path_autocomplete($string = NULL) {
   $args = func_get_args();
   $string = implode('/', $args);
   $string = strtolower($string);
