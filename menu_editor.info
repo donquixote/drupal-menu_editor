@@ -1,6 +1,6 @@
 name = Menu Editor
 description = Improved interface for menu editing.
 package = Menu
-core = 6.x
+core = 7.x
 dependencies[] = menu
 

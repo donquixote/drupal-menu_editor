@@ -4,14 +4,14 @@
  * Implementation of hook_menu().
  */
 function menu_editor_menu() {
-  $items['admin/build/menu-customize/%menu/poweredit'] = array(
+  $items['admin/structure/menu/manage/%menu/poweredit'] = array(
     'title' => 'Power Edit',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('menu_editor_overview_form', 3),
+    'page arguments' => array('menu_editor_overview_form', 4),
     // 'title callback' => 'menu_editor_overview_title',
     // 'title arguments' => array(3),
     'access callback' => 'menu_editor_form_access',
-    'access arguments' => array(3),
+    'access arguments' => array(4),
     'type' => MENU_LOCAL_TASK,
     'file' => 'menu_editor.admin.inc',
   );
@@ -19,11 +19,16 @@ function menu_editor_menu() {
   return $items;
 }
 
-function menu_editor_perm() {
-  $result = db_query("SELECT menu_name FROM {menu_custom} ORDER BY title");
+/**
+ * Implements hook_permission().
+ */
+function menu_editor_permission() {
+  $menus = menu_get_menus(TRUE);
   $perm = array();
-  while ($menu = db_fetch_array($result)) {
-    $perm[] = "menu edit $menu[menu_name]";
+  foreach ($menus as $menu) {
+    $perm["menu edit $menu"] = array(
+      'title' => t("Menu edit $menu"),
+    );
   }
   return $perm;
 }
@@ -35,19 +40,19 @@ function menu_editor_form_access($menu) {
   ;
 }
 
-function menu_editor_admin_menu() {
-  $result = db_query("SELECT * FROM {menu_custom} ORDER BY title");
-  $items = array();
-  while ($menu = db_fetch_array($result)) {
-    $items[] = array(
-      'title' => $menu['title'],
-      'path' => 'admin/build/menu-customize/'. $menu['menu_name'] . '/poweredit',
-      'parent_path' => 'admin/build/menu/list',
-      'weight' => 100,
-    );
-  }
-  return $items;
-}
+// function menu_editor_admin_menu() {
+//   $result = db_query("SELECT * FROM {menu_custom} ORDER BY title");
+//   $items = array();
+//   while ($menu = db_fetch_array($result)) {
+//     $items[] = array(
+//       'title' => $menu['title'],
+//       'path' => 'admin/build/menu-customize/'. $menu['menu_name'] . '/poweredit',
+//       'parent_path' => 'admin/build/menu/list',
+//       'weight' => 100,
+//     );
+//   }
+//   return $items;
+// }
 
 /**
  * Implemenation of hook_theme().
@@ -56,7 +61,7 @@ function menu_editor_theme() {
   return array(
     'menu_editor_overview_form' => array(
       'file' => 'menu_editor.admin.inc',
-      'arguments' => array('form' => NULL),
+      'render element' => 'form',
     ),
   );
 }
