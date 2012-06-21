@@ -222,9 +222,12 @@ function menu_editor_overview_form_validate($form, &$form_state) {
 
   // Check existing items.
   foreach (element_children($form) as $item_key) {
-    $element = &$form[$item_key];
-    if (isset($element['link_path'])) {
-      menu_editor_validate_item($element, $element['link_path']['#value'], $item_key . '][');
+    // Check if these are menu items.
+    if (strpos($item_key, 'mlid-') !== FALSE) {
+      $element = &$form[$item_key];
+      if (isset($element['link_path'])) {
+        menu_editor_validate_item($element, $element['link_path']['#value'], $item_key . '][');
+      }
     }
   }
 

@@ -1,0 +1,5 @@
+name = Menu Editor path autocomplete
+description = Autocomplete for Menu Editor path field.
+core = 7.x
+dependencies[] = menu_editor
+package = Menu
