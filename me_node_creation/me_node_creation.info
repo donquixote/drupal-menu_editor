@@ -1,6 +1,7 @@
 name = Menu Editor - Node creation
 description = Menu item placeholders for node creation.
 package = Menu
-core = 6.x
+core = 7.x
 dependencies[] = menu_editor
-
+; xautoload for the crumbs plugin
+dependencies[] = xautoload
