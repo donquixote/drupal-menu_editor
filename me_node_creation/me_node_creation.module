@@ -18,7 +18,7 @@ function me_node_creation_permission() {
  */
 function me_node_creation_menu() {
   $items = array();
-  $items['node/add/%node_type/mlid/%menu_link'] = array(
+  $items['node/add/%node_type/mlid/%menu_editor_menu_link'] = array(
     'load arguments' => array(2, 4),
     'title' => 'Create a node',
     'page callback' => 'me_node_creation_create_node',
@@ -88,21 +88,6 @@ function me_node_creation_crumbs_plugins($api) {
 
 // Wildcard loaders
 // -----------------------------------------------------------------------------
-
-
-/**
- * Wildcard loader for %menu_editor_mlid
- */
-function menu_editor_mlid_load($mlid, $type_arg) {
-  if ($type_arg == 'auto') {
-    // TODO: What is this for?
-    return 1;
-  } 
-  if ((int)$mlid == $mlid && $mlid > 0) {
-    return $mlid;
-  }
-  return false;
-}
 
 
 /**

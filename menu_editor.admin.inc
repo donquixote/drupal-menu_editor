@@ -146,7 +146,7 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
 function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $language_options = NULL) {
 
   foreach (menu_editor_get_placeholders() as $code => $path) {
-    if (str_replace('%mlid', $item_mlid, $path) == $default_values['link_path']) {
+    if (str_replace('@mlid', $item_mlid, $path) == $default_values['link_path']) {
       $default_values['link_path'] = $code;
     }
   }
@@ -395,8 +395,8 @@ function menu_editor_overview_form_submit($form, &$form_state) {
 
     // placeholders
     if (isset($placeholders[$link_path])) {
-      if (is_numeric($item['mlid'])) {
-        $link_path = str_replace('%mlid', $item['mlid'], $placeholders[$link_path]);
+      if (isset($item['mlid']) && is_numeric($item['mlid'])) {
+        $link_path = str_replace('@mlid', $item['mlid'], $placeholders[$link_path]);
       }
       else {
         $link_path_placeholder = $placeholders[$link_path];
@@ -453,7 +453,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
       $mlids[$item_key] = $mlid;
       if (isset($link_path_placeholder)) {
         // overwrite the dummy link path
-        $link_path = str_replace('%mlid', $item['mlid'], $link_path_placeholder);
+        $link_path = str_replace('@mlid', $item['mlid'], $link_path_placeholder);
 
         menu_link_save($item);
       }
