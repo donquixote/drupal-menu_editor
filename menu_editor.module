@@ -90,5 +90,3 @@ function menu_editor_get_path_for_placeholder($placeholder, $mlid) {
   }
   return $placeholder;
 }
-
-

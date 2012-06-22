@@ -29,10 +29,9 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
   $menu_admin = FALSE;
 
   $form = array('#tree' => TRUE);
-  // if (module_exists('i18nmenu')) {
-  //   $language_options = array('' => t('All languages')) + locale_language_list('name');
-  //   $form['#_language_options'] = $language_options;
-  // }
+  if (module_exists('i18n_menu')) {
+    $form['#multilingual_menu'] = FALSE;
+  }
 
   $max_root_weight = _menu_editor_overview_tree_form($form, $form_state, $tree);
 
@@ -46,7 +45,7 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
     'weight' => 0,
     // 'mlid' => NULL,  // this is different for every single one
     'plid' => 0,
-    'language' => '',
+    'language' => LANGUAGE_NONE,
   );
 
   foreach (menu_editor_get_placeholders() as $placeholder_code => $placeholder_path) {
@@ -124,6 +123,22 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
       $form[$item_key]['#attributes'] = $item['hidden'] ? array('class' => 'menu-disabled') : array('class' => 'menu-enabled');
       $form[$item_key]['drag']['#markup'] = l($item['title'], $item['href'], $item['localized_options']) . ($item['hidden'] ? ' ('. t('disabled') .')' : '');
 
+      // Include i18n support.
+      if (module_exists('i18n_menu')) {
+        $item['language'] = i18n_menu_item_get_language($item);
+        $node_item = ($node = i18n_menu_item_get_node($item)) && i18n_menu_node_supported_type($node->type);
+        if (!$node_item && i18n_menu_mode($item['menu_name'], I18N_MODE_TRANSLATE)) {
+          $form[$item_key]['language'] = array('#title' => NULL) + i18n_element_language_select($item);
+          $form['#multilingual_menu'] = TRUE;
+        }
+        else {
+          $form[$item_key]['language'] = array(
+            '#ytpe' => 'value',
+            '#value' => $item['language'],
+          );
+        }
+      }
+
       // Only items created by the menu module can be deleted.
       if ($item['module'] == 'menu' || $item['updated'] == 1) { 
         $form[$item_key]['delete'] = array(
@@ -143,7 +158,7 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
 }
 
 
-function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $language_options = NULL) {
+function _menu_editor_overview_tree_form_item($item_mlid, $default_values) {
 
   foreach (menu_editor_get_placeholders() as $code => $path) {
     if (str_replace('@mlid', $item_mlid, $path) == $default_values['link_path']) {
@@ -188,12 +203,6 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $lang
     '#type' => 'textfield',
     '#size' => 6,
   );
-  if ($language_options) {
-    $element['language'] = array(
-      '#type' => 'select',
-      '#options' => $language_options,
-    );
-  }
   foreach ($default_values as $key => $value) {
     if (isset($element[$key])) {
       $element[$key]['#default_value'] = $value;
@@ -343,10 +352,6 @@ function menu_editor_overview_form_submit($form, &$form_state) {
         // delete existing item
         if (is_numeric($v['mlid'])) {
           menu_link_delete($v['mlid']);
-          // patch from http://drupal.org/node/786230#comment-2911158
-          // if (module_exists('i18nmenu')) {
-          //   _i18nmenu_delete_item($v['mlid']);
-          // }
         }
         continue;
       } else {
@@ -365,12 +370,12 @@ function menu_editor_overview_form_submit($form, &$form_state) {
         $updated_items[$item_key] = $element['#item'];
       }
       // langcode is a special case as well
-      // if ($form['#_language_options']) {
-      //   if ($v['language'] != $element['language']['#default_value']) {
-      //     $element['#item']['options']['langcode'] = $v['language'];
-      //     $updated_items[$item_key] = $element['#item'];
-      //   }
-      // }
+      if ($form['#multilingual_menu']) {
+        if ($v['language'] != $element['language']['#default_value']) {
+          $element['#item']['language'] = $v['language'];
+          $updated_items[$item_key] = $element['#item'];
+        }
+      }
       // description is a special case
       if (isset($updated_items[$item_key]['description'])) {
         $updated_items[$item_key]['options']['attributes']['title'] = $updated_items[$item_key]['description'];
@@ -457,13 +462,6 @@ function menu_editor_overview_form_submit($form, &$form_state) {
 
         menu_link_save($item);
       }
-
-      // if (module_exists('i18nmenu')) {
-      //   // Ensure we have a menu item to work with.
-      //   // patch from http://drupal.org/node/786230#comment-2911038
-      //   $item['parent'] = $item['menu_name'] .':'. $item['plid'];
-      //   _i18nmenu_update_item($item);
-      // }
     }
     else {
       $errors[] = $item_key;
@@ -489,7 +487,7 @@ function theme_menu_editor_overview_form($variables) {
   drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
   drupal_add_js(drupal_get_path('module', 'menu_editor') . '/menu_editor.js');
   global $language;
-  // $i18nmenu = module_exists('i18nmenu');
+  $i18n_menu = $form['#multilingual_menu'];
   drupal_add_tabledrag('menu-overview', 'match', 'parent', 'menu-plid', 'menu-plid', 'menu-mlid', TRUE, MENU_MAX_DEPTH - 1);
   drupal_add_tabledrag('menu-overview', 'order', 'sibling', 'menu-weight');
 
@@ -501,33 +499,17 @@ function theme_menu_editor_overview_form($variables) {
   $header[] = array('data' => t('En.'), 'class' => 'checkbox');
   $header[] = array('data' => t('Exp.'), 'class' => 'checkbox');
   $header[] = t('Weight');
-  // if ($i18nmenu) {
-  //   $header[] = t('Language');
-  // }
+  if ($i18n_menu) {
+    $header[] = t('Language');
+  }
   $header[] = array('data'  => t('Delete'), 'class' => 'delete-checkbox');
 
   $rows = array();
   $items = array();
-  // TODO
-  // if (isset($form['sections'])) {
-  //   foreach (element_children($form['sections']) as $section_key) {
-  //     foreach (element_children($form['sections'][$section_key]) as $item_key) {
-  //       $element = $form['sections'][$item_key];
-  //     }
-  //   }
-  // }
+
   foreach (element_children($form) as $item_key) {
     if (isset($form[$item_key]['hidden'])) {
       $element = &$form[$item_key];
-      // TODO
-      // Build a list of operations.
-      // $operations = array();
-      // foreach (element_children($element['operations']) as $op) {
-      //   $operations[] = drupal_render($element['operations'][$op]);
-      // }
-      // while (count($operations) < 2) {
-      //   $operations[] = '';
-      // }
 
       // Add special classes to be used for tabledrag.js.
       $element['plid']['#attributes']['class'] = array('menu-plid');
@@ -556,30 +538,24 @@ function theme_menu_editor_overview_form($variables) {
       $cells['hidden'] = array('data' => drupal_render($element['hidden']), 'class' => 'checkbox');
       $cells['expanded'] = array('data' => drupal_render($element['expanded']), 'class' => 'checkbox');
       $cells['mlid'] = drupal_render($element['weight']) . drupal_render($element['plid']) . drupal_render($element['mlid']);
-      // if ($i18nmenu) {
-      //   $cells['language'] = array('data' => drupal_render($element['language']), 'class' => 'select');
-      // }
+      if ($i18n_menu) {
+        $cells['language'] = array('data' => drupal_render($element['language']), 'class' => 'select');
+      }
       $cells['delete'] = array('data' => drupal_render($element['delete']), 'class' => 'delete-checkbox');
 
       $row = array_merge(array('data' => $cells), $element['#attributes']);
       $row['class'] = array('draggable');
-      // if ($i18nmenu) {
-      //   $langcode = $element['language']['#default_value'];
-      //   $row['class'] .= ($langcode) ? ' langcode-'.$langcode : ' all-languages';
-      //   $row['class'] .= ($langcode == $language->language) ? ' active-language' : '';
-      // }
+      if ($i18n_menu) {
+        $langcode = $element['language']['#default_value'];
+        $row['class'][] = ($langcode != LANGUAGE_NONE) ? 'langcode-'.$langcode : 'all-languages';
+        $row['class'][]= ($langcode == $language->language) ? 'active-language' : '';
+      }
       $rows[$item_key] = $row;
-      // if (isset($element['#item'])) {
-      //   $items[$item_key] = $element['#item'];
-      // }
     }
   }
   $output = '';
   // allow other modules to change the table data.
-  // foreach (module_implements('menu_editor_overview_table_alter') as $module) {
-  //   $function = $module . '_menu_editor_overview_table_alter';
-  //   $function($header, $rows, $items);
-  // }
+  drupal_alter('menu_editor_overview_table', $header, $rows);
   $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'menu-overview')));
   $output .= drupal_render_children($form);
   return $output;
