@@ -29,9 +29,7 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
   $menu_admin = FALSE;
 
   $form = array('#tree' => TRUE);
-  if (module_exists('i18n_menu')) {
-    $form['#multilingual_menu'] = FALSE;
-  }
+  $form['#multilingual_menu'] = FALSE;
 
   $max_root_weight = _menu_editor_overview_tree_form($form, $form_state, $tree);
 
