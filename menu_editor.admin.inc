@@ -59,7 +59,7 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
     // new menu item
     $default_values['mlid'] = 'new' . $i;
     $item_key = 'mlid-new'.$i;
-    $form[$item_key] = _menu_editor_overview_tree_form_item('new'.$i, $default_values);
+    $form[$item_key] = _menu_editor_overview_tree_form_item('new'.$i, $default_values, $form['#multilingual_menu']);
     $form[$item_key]['weight']['#default_value'] = $max_root_weight + $i + 1;
     $form[$item_key]['#item'] = array();
     $form[$item_key]['#attributes'] = array('class' => 'menu-new');
@@ -117,7 +117,7 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
         'depth' => 1,
       );
 
-      $form[$item_key] = _menu_editor_overview_tree_form_item($item['mlid'], $default_values);
+      $form[$item_key] = _menu_editor_overview_tree_form_item($item['mlid'], $default_values, $form['#multilingual_menu']);
 
       $form[$item_key]['#item'] = $item;
       $form[$item_key]['#attributes'] = $item['hidden'] ? array('class' => 'menu-disabled') : array('class' => 'menu-enabled');
@@ -130,11 +130,44 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
         if (!$node_item && i18n_menu_mode($item['menu_name'], I18N_MODE_TRANSLATE)) {
           $form[$item_key]['language'] = array('#title' => NULL) + i18n_element_language_select($item);
           $form['#multilingual_menu'] = TRUE;
+          // If the term to be added will be a translation of a source term,
+          // set the default value of the option list to the target language and
+          // create a form element for storing the translation set of the source term.
+          if (isset($_GET['translation']) && isset($_GET['target']) && ($source_item = menu_link_load($_GET['translation']))) {
+            if (!empty($source_item['i18n_tsid'])) {
+              $translation_set = i18n_translation_set_load($source_item['i18n_tsid']);
+            }
+            else {
+              // Create object and stick the source information in the translation set.
+              $translation_set = i18n_translation_set_build('menu_link')
+                ->add_item($source_item);
+            }
+            $form[$item_key]['link_path']['#default_value'] = $source_item['link_path'];
+
+            // Maybe we should disable the 'link_path' and 'parent' form elements?
+            // $form['link_path']['#disabled'] = TRUE;
+            // $form['parent']['#disabled'] = TRUE;
+
+            $form[$item_key]['language']['#default_value'] = $_GET['target'];
+            $form[$item_key]['language']['#disabled'] = TRUE;
+          }
         }
         else {
           $form[$item_key]['language'] = array(
-            '#ytpe' => 'value',
+            '#type' => 'value',
             '#value' => $item['language'],
+          );
+        }
+        // Aside from the usual conditions from i18n_menu_form_menu_edit_item_alter(), also
+        // check if the return of the language name isn't "Undefined". This is caused when
+        // choosing "Translate mode" to be "No multilingual options for menu items. Only the
+        // menu will be translatable." but one of the menu items is a node which
+        // is translatable.
+        if ($node_item && i18n_langcode($item['language']) && i18n_language_name($item['language']) != t('Undefined')) {
+          $form[$item_key]['lang_message'] = array(
+            '#type' => 'markup',
+            '#title' => t('Language'),
+            '#markup' => i18n_language_name($item['language']),
           );
         }
       }
@@ -158,7 +191,7 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
 }
 
 
-function _menu_editor_overview_tree_form_item($item_mlid, $default_values) {
+function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $multilingual_menu = FALSE) {
 
   foreach (menu_editor_get_placeholders() as $code => $path) {
     if (str_replace('@mlid', $item_mlid, $path) == $default_values['link_path']) {
@@ -203,6 +236,10 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values) {
     '#type' => 'textfield',
     '#size' => 6,
   );
+  // If this is a new menu item, simply provide i18n_menu select options.
+  if (strpos($item_mlid, 'new') === 0 && $multilingual_menu) {
+    $element['language'] = array('#title' => NULL) + i18n_element_language_select();
+  }
   foreach ($default_values as $key => $value) {
     if (isset($element[$key])) {
       $element[$key]['#default_value'] = $value;
@@ -371,7 +408,8 @@ function menu_editor_overview_form_submit($form, &$form_state) {
       }
       // langcode is a special case as well
       if ($form['#multilingual_menu']) {
-        if ($v['language'] != $element['language']['#default_value']) {
+        $langcode = isset($element['language']['#default_value']) ? $element['language']['#default_value'] : $element['language']['#value'];
+        if ($v['language'] != $langcode) {
           $element['#item']['language'] = $v['language'];
           $updated_items[$item_key] = $element['#item'];
         }
@@ -539,14 +577,19 @@ function theme_menu_editor_overview_form($variables) {
       $cells['expanded'] = array('data' => drupal_render($element['expanded']), 'class' => 'checkbox');
       $cells['mlid'] = drupal_render($element['weight']) . drupal_render($element['plid']) . drupal_render($element['mlid']);
       if ($i18n_menu) {
-        $cells['language'] = array('data' => drupal_render($element['language']), 'class' => 'select');
+        if (isset($element['lang_message'])) {
+          $cells['language'] = array('data' => drupal_render($element['lang_message']));
+        }
+        else {
+          $cells['language'] = array('data' => drupal_render($element['language']), 'class' => 'select');
+        }
       }
       $cells['delete'] = array('data' => drupal_render($element['delete']), 'class' => 'delete-checkbox');
 
       $row = array_merge(array('data' => $cells), $element['#attributes']);
       $row['class'] = array('draggable');
       if ($i18n_menu) {
-        $langcode = $element['language']['#default_value'];
+        $langcode = isset($element['language']['#default_value']) ? $element['language']['#default_value'] : $element['language']['#value'];
         $row['class'][] = ($langcode != LANGUAGE_NONE) ? 'langcode-'.$langcode : 'all-languages';
         $row['class'][]= ($langcode == $language->language) ? 'active-language' : '';
       }
