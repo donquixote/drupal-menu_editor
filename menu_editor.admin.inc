@@ -29,10 +29,7 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
   $menu_admin = FALSE;
 
   $form = array('#tree' => TRUE);
-  // if (module_exists('i18nmenu')) {
-  //   $language_options = array('' => t('All languages')) + locale_language_list('name');
-  //   $form['#_language_options'] = $language_options;
-  // }
+  $form['#multilingual_menu'] = FALSE;
 
   $max_root_weight = _menu_editor_overview_tree_form($form, $form_state, $tree);
 
@@ -46,7 +43,7 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
     'weight' => 0,
     // 'mlid' => NULL,  // this is different for every single one
     'plid' => 0,
-    'language' => '',
+    'language' => LANGUAGE_NONE,
   );
 
   foreach (menu_editor_get_placeholders() as $placeholder_code => $placeholder_path) {
@@ -60,7 +57,7 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
     // new menu item
     $default_values['mlid'] = 'new' . $i;
     $item_key = 'mlid-new'.$i;
-    $form[$item_key] = _menu_editor_overview_tree_form_item('new'.$i, $default_values);
+    $form[$item_key] = _menu_editor_overview_tree_form_item('new'.$i, $default_values, $form['#multilingual_menu']);
     $form[$item_key]['weight']['#default_value'] = $max_root_weight + $i + 1;
     $form[$item_key]['#item'] = array();
     $form[$item_key]['#attributes'] = array('class' => 'menu-new');
@@ -118,11 +115,60 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
         'depth' => 1,
       );
 
-      $form[$item_key] = _menu_editor_overview_tree_form_item($item['mlid'], $default_values);
+      $form[$item_key] = _menu_editor_overview_tree_form_item($item['mlid'], $default_values, $form['#multilingual_menu']);
 
       $form[$item_key]['#item'] = $item;
       $form[$item_key]['#attributes'] = $item['hidden'] ? array('class' => 'menu-disabled') : array('class' => 'menu-enabled');
       $form[$item_key]['drag']['#markup'] = l($item['title'], $item['href'], $item['localized_options']) . ($item['hidden'] ? ' ('. t('disabled') .')' : '');
+
+      // Include i18n support.
+      if (module_exists('i18n_menu')) {
+        $item['language'] = i18n_menu_item_get_language($item);
+        $node_item = ($node = i18n_menu_item_get_node($item)) && i18n_menu_node_supported_type($node->type);
+        if (!$node_item && i18n_menu_mode($item['menu_name'], I18N_MODE_TRANSLATE)) {
+          $form[$item_key]['language'] = array('#title' => NULL) + i18n_element_language_select($item);
+          $form['#multilingual_menu'] = TRUE;
+          // If the term to be added will be a translation of a source term,
+          // set the default value of the option list to the target language and
+          // create a form element for storing the translation set of the source term.
+          if (isset($_GET['translation']) && isset($_GET['target']) && ($source_item = menu_link_load($_GET['translation']))) {
+            if (!empty($source_item['i18n_tsid'])) {
+              $translation_set = i18n_translation_set_load($source_item['i18n_tsid']);
+            }
+            else {
+              // Create object and stick the source information in the translation set.
+              $translation_set = i18n_translation_set_build('menu_link')
+                ->add_item($source_item);
+            }
+            $form[$item_key]['link_path']['#default_value'] = $source_item['link_path'];
+
+            // Maybe we should disable the 'link_path' and 'parent' form elements?
+            // $form['link_path']['#disabled'] = TRUE;
+            // $form['parent']['#disabled'] = TRUE;
+
+            $form[$item_key]['language']['#default_value'] = $_GET['target'];
+            $form[$item_key]['language']['#disabled'] = TRUE;
+          }
+        }
+        else {
+          $form[$item_key]['language'] = array(
+            '#type' => 'value',
+            '#value' => $item['language'],
+          );
+        }
+        // Aside from the usual conditions from i18n_menu_form_menu_edit_item_alter(), also
+        // check if the return of the language name isn't "Undefined". This is caused when
+        // choosing "Translate mode" to be "No multilingual options for menu items. Only the
+        // menu will be translatable." but one of the menu items is a node which
+        // is translatable.
+        if ($node_item && i18n_langcode($item['language']) && i18n_language_name($item['language']) != t('Undefined')) {
+          $form[$item_key]['lang_message'] = array(
+            '#type' => 'markup',
+            '#title' => t('Language'),
+            '#markup' => i18n_language_name($item['language']),
+          );
+        }
+      }
 
       // Only items created by the menu module can be deleted.
       if ($item['module'] == 'menu' || $item['updated'] == 1) { 
@@ -143,10 +189,10 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
 }
 
 
-function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $language_options = NULL) {
+function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $multilingual_menu = FALSE) {
 
   foreach (menu_editor_get_placeholders() as $code => $path) {
-    if (str_replace('%mlid', $item_mlid, $path) == $default_values['link_path']) {
+    if (str_replace('@mlid', $item_mlid, $path) == $default_values['link_path']) {
       $default_values['link_path'] = $code;
     }
   }
@@ -188,11 +234,9 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $lang
     '#type' => 'textfield',
     '#size' => 6,
   );
-  if ($language_options) {
-    $element['language'] = array(
-      '#type' => 'select',
-      '#options' => $language_options,
-    );
+  // If this is a new menu item, simply provide i18n_menu select options.
+  if (strpos($item_mlid, 'new') === 0 && $multilingual_menu) {
+    $element['language'] = array('#title' => NULL) + i18n_element_language_select();
   }
   foreach ($default_values as $key => $value) {
     if (isset($element[$key])) {
@@ -222,9 +266,12 @@ function menu_editor_overview_form_validate($form, &$form_state) {
 
   // Check existing items.
   foreach (element_children($form) as $item_key) {
-    $element = &$form[$item_key];
-    if (isset($element['link_path'])) {
-      menu_editor_validate_item($element, $element['link_path']['#value'], $item_key . '][');
+    // Check if these are menu items.
+    if (strpos($item_key, 'mlid-') !== FALSE) {
+      $element = &$form[$item_key];
+      if (isset($element['link_path'])) {
+        menu_editor_validate_item($element, $element['link_path']['#value'], $item_key . '][');
+      }
     }
   }
 
@@ -340,10 +387,6 @@ function menu_editor_overview_form_submit($form, &$form_state) {
         // delete existing item
         if (is_numeric($v['mlid'])) {
           menu_link_delete($v['mlid']);
-          // patch from http://drupal.org/node/786230#comment-2911158
-          // if (module_exists('i18nmenu')) {
-          //   _i18nmenu_delete_item($v['mlid']);
-          // }
         }
         continue;
       } else {
@@ -362,12 +405,13 @@ function menu_editor_overview_form_submit($form, &$form_state) {
         $updated_items[$item_key] = $element['#item'];
       }
       // langcode is a special case as well
-      // if ($form['#_language_options']) {
-      //   if ($v['language'] != $element['language']['#default_value']) {
-      //     $element['#item']['options']['langcode'] = $v['language'];
-      //     $updated_items[$item_key] = $element['#item'];
-      //   }
-      // }
+      if ($form['#multilingual_menu']) {
+        $langcode = isset($element['language']['#default_value']) ? $element['language']['#default_value'] : $element['language']['#value'];
+        if ($v['language'] != $langcode) {
+          $element['#item']['language'] = $v['language'];
+          $updated_items[$item_key] = $element['#item'];
+        }
+      }
       // description is a special case
       if (isset($updated_items[$item_key]['description'])) {
         $updated_items[$item_key]['options']['attributes']['title'] = $updated_items[$item_key]['description'];
@@ -392,8 +436,8 @@ function menu_editor_overview_form_submit($form, &$form_state) {
 
     // placeholders
     if (isset($placeholders[$link_path])) {
-      if (is_numeric($item['mlid'])) {
-        $link_path = str_replace('%mlid', $item['mlid'], $placeholders[$link_path]);
+      if (isset($item['mlid']) && is_numeric($item['mlid'])) {
+        $link_path = str_replace('@mlid', $item['mlid'], $placeholders[$link_path]);
       }
       else {
         $link_path_placeholder = $placeholders[$link_path];
@@ -450,17 +494,10 @@ function menu_editor_overview_form_submit($form, &$form_state) {
       $mlids[$item_key] = $mlid;
       if (isset($link_path_placeholder)) {
         // overwrite the dummy link path
-        $link_path = str_replace('%mlid', $item['mlid'], $link_path_placeholder);
+        $link_path = str_replace('@mlid', $item['mlid'], $link_path_placeholder);
 
         menu_link_save($item);
       }
-
-      // if (module_exists('i18nmenu')) {
-      //   // Ensure we have a menu item to work with.
-      //   // patch from http://drupal.org/node/786230#comment-2911038
-      //   $item['parent'] = $item['menu_name'] .':'. $item['plid'];
-      //   _i18nmenu_update_item($item);
-      // }
     }
     else {
       $errors[] = $item_key;
@@ -486,7 +523,7 @@ function theme_menu_editor_overview_form($variables) {
   drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
   drupal_add_js(drupal_get_path('module', 'menu_editor') . '/menu_editor.js');
   global $language;
-  // $i18nmenu = module_exists('i18nmenu');
+  $i18n_menu = $form['#multilingual_menu'];
   drupal_add_tabledrag('menu-overview', 'match', 'parent', 'menu-plid', 'menu-plid', 'menu-mlid', TRUE, MENU_MAX_DEPTH - 1);
   drupal_add_tabledrag('menu-overview', 'order', 'sibling', 'menu-weight');
 
@@ -498,33 +535,17 @@ function theme_menu_editor_overview_form($variables) {
   $header[] = array('data' => t('En.'), 'class' => 'checkbox');
   $header[] = array('data' => t('Exp.'), 'class' => 'checkbox');
   $header[] = t('Weight');
-  // if ($i18nmenu) {
-  //   $header[] = t('Language');
-  // }
+  if ($i18n_menu) {
+    $header[] = t('Language');
+  }
   $header[] = array('data'  => t('Delete'), 'class' => 'delete-checkbox');
 
   $rows = array();
   $items = array();
-  // TODO
-  // if (isset($form['sections'])) {
-  //   foreach (element_children($form['sections']) as $section_key) {
-  //     foreach (element_children($form['sections'][$section_key]) as $item_key) {
-  //       $element = $form['sections'][$item_key];
-  //     }
-  //   }
-  // }
+
   foreach (element_children($form) as $item_key) {
     if (isset($form[$item_key]['hidden'])) {
       $element = &$form[$item_key];
-      // TODO
-      // Build a list of operations.
-      // $operations = array();
-      // foreach (element_children($element['operations']) as $op) {
-      //   $operations[] = drupal_render($element['operations'][$op]);
-      // }
-      // while (count($operations) < 2) {
-      //   $operations[] = '';
-      // }
 
       // Add special classes to be used for tabledrag.js.
       $element['plid']['#attributes']['class'] = array('menu-plid');
@@ -553,30 +574,29 @@ function theme_menu_editor_overview_form($variables) {
       $cells['hidden'] = array('data' => drupal_render($element['hidden']), 'class' => 'checkbox');
       $cells['expanded'] = array('data' => drupal_render($element['expanded']), 'class' => 'checkbox');
       $cells['mlid'] = drupal_render($element['weight']) . drupal_render($element['plid']) . drupal_render($element['mlid']);
-      // if ($i18nmenu) {
-      //   $cells['language'] = array('data' => drupal_render($element['language']), 'class' => 'select');
-      // }
+      if ($i18n_menu) {
+        if (isset($element['lang_message'])) {
+          $cells['language'] = array('data' => drupal_render($element['lang_message']));
+        }
+        else {
+          $cells['language'] = array('data' => drupal_render($element['language']), 'class' => 'select');
+        }
+      }
       $cells['delete'] = array('data' => drupal_render($element['delete']), 'class' => 'delete-checkbox');
 
       $row = array_merge(array('data' => $cells), $element['#attributes']);
       $row['class'] = array('draggable');
-      // if ($i18nmenu) {
-      //   $langcode = $element['language']['#default_value'];
-      //   $row['class'] .= ($langcode) ? ' langcode-'.$langcode : ' all-languages';
-      //   $row['class'] .= ($langcode == $language->language) ? ' active-language' : '';
-      // }
+      if ($i18n_menu) {
+        $langcode = isset($element['language']['#default_value']) ? $element['language']['#default_value'] : $element['language']['#value'];
+        $row['class'][] = ($langcode != LANGUAGE_NONE) ? 'langcode-'.$langcode : 'all-languages';
+        $row['class'][]= ($langcode == $language->language) ? 'active-language' : '';
+      }
       $rows[$item_key] = $row;
-      // if (isset($element['#item'])) {
-      //   $items[$item_key] = $element['#item'];
-      // }
     }
   }
   $output = '';
   // allow other modules to change the table data.
-  // foreach (module_implements('menu_editor_overview_table_alter') as $module) {
-  //   $function = $module . '_menu_editor_overview_table_alter';
-  //   $function($header, $rows, $items);
-  // }
+  drupal_alter('menu_editor_overview_table', $header, $rows);
   $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'menu-overview')));
   $output .= drupal_render_children($form);
   return $output;

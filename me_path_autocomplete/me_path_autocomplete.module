@@ -10,17 +10,17 @@
  */
 
 /**
- * Implement hook_menu().
+ * Implements hook_menu().
  *
  * @return An array of menu items.
  */
-function menu_editor_path_autocomplete_menu() {
+function me_path_autocomplete_menu() {
   $items = array();
 
   $items['mepac/autocomplete'] = array(
     'title' => 'Menu path autocomplete',
     'description' => 'Autocomplete callback for menu path autocomplete',
-    'page callback' => 'menu_editor_path_autocomplete',
+    'page callback' => 'me_path_autocomplete',
     'access callback' => 'user_access',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
@@ -36,7 +36,7 @@ function menu_editor_path_autocomplete_menu() {
  * @return
  *   List of elements with path as key.
  */
-function menu_editor_path_autocomplete($string = NULL) {
+function me_path_autocomplete($string = NULL) {
   $args = func_get_args();
   $string = implode('/', $args);
   $string = strtolower($string);
@@ -49,44 +49,55 @@ function menu_editor_path_autocomplete($string = NULL) {
       $matches[$placeholder_code] = htmlentities($placeholder_code);
     }
   }
+
   
   // Get a list of all nodes where the title matches the given string.
   if (strlen($string) > 1) {
-    $like_placeholder = (strlen($string) > 3) ? "%%%s%%" : "%s%%";
-    $query = db_query("SELECT * FROM {node} n WHERE n.title LIKE '$like_placeholder' LIMIT 0,8", $string);
-    while ($node = db_fetch_object($query)) {
+    $like_placeholder = (strlen($string) > 3) ? "%" . db_like($string) . "%" : db_like($string) . "%";
+    $nodes = db_select('node', 'n')
+      ->fields('n')
+      ->condition('title', $like_placeholder, 'LIKE')
+      ->range(0, 8)
+      ->execute();
+
+    foreach ($nodes as $node) {
       // Add node path and title to list.
       if (node_access('view', $node) && $node->status) {
         $node_title = check_plain($node->title);
         $nid = $node->nid;
-        $lang = $node->language ? ($node->language . ': ') : '';
+        $lang = $node->language != LANGUAGE_NONE ? ($node->language . ': ') : '';
         $matches['node/'. $node->nid] = $lang . "$node_title [nid:$nid]";
       }
     }
     if (module_exists('path')) {
       // Get a list of all URL aliases where the destination matches the given
       // string.
-      $query = db_query("SELECT * FROM {url_alias} WHERE dst LIKE '$like_placeholder' LIMIT 0,8", $string);
-      while ($alias = db_fetch_object($query)) {
+      $aliases = db_select('url_alias')
+        ->fields('url_alias')
+        ->condition('alias', $like_placeholder, 'LIKE')
+        ->range(0, 8)
+        ->execute();
+
+      foreach ($aliases as $alias) {
         // Add alias source and destination to list (and add a special marker to
         // the item).
-        $lang = $alias->language ? ($alias->language . ': ') : '';
-        $src = check_plain($alias->src);
-        $dst = check_plain($alias->dst);
-        $matches[$alias->src] = $lang . "$dst | $src";
+        $lang = $alias->language != LANGUAGE_NONE ? ($alias->language . ': ') : '';
+        $src = check_plain($alias->source);
+        $dst = check_plain($alias->alias);
+        $matches[$alias->source] = $lang . "$dst | $src";
       }
     }
   }
   
-  drupal_json($matches);
+  drupal_json_output($matches);
 }
 
 /**
- * Implement hook_form_FORM_ID_alter().
+ * Implements hook_form_FORM_ID_alter().
  *
  * Change path field to autocomplete field.
  */
-function menu_editor_path_autocomplete_form_menu_editor_overview_form_alter(&$form, &$form_state) {
+function me_path_autocomplete_form_menu_editor_overview_form_alter(&$form, &$form_state) {
   foreach (element_children($form) as $element_key) {
     $form[$element_key]['link_path']['#autocomplete_path'] = 'mepac/autocomplete';
   }
