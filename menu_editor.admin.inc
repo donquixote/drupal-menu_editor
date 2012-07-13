@@ -30,6 +30,7 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
 
   $form = array('#tree' => TRUE);
   $form['#multilingual_menu'] = FALSE;
+  $form['#translatable_nodes'] = FALSE;
 
   $max_root_weight = _menu_editor_overview_tree_form($form, $form_state, $tree);
 
@@ -161,12 +162,14 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
         // choosing "Translate mode" to be "No multilingual options for menu items. Only the
         // menu will be translatable." but one of the menu items is a node which
         // is translatable.
-        if ($node_item && i18n_langcode($item['language']) && i18n_language_name($item['language']) != t('Undefined')) {
+        if ($node_item && i18n_langcode($item['language'])) {
           $form[$item_key]['lang_message'] = array(
             '#type' => 'markup',
             '#title' => t('Language'),
             '#markup' => i18n_language_name($item['language']),
           );
+
+          $form['#translatable_nodes'] = TRUE;
         }
       }
 
@@ -523,7 +526,7 @@ function theme_menu_editor_overview_form($variables) {
   drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
   drupal_add_js(drupal_get_path('module', 'menu_editor') . '/menu_editor.js');
   global $language;
-  $i18n_menu = $form['#multilingual_menu'];
+  $i18n_menu = $form['#multilingual_menu'] || $form['#translatable_nodes'];
   drupal_add_tabledrag('menu-overview', 'match', 'parent', 'menu-plid', 'menu-plid', 'menu-mlid', TRUE, MENU_MAX_DEPTH - 1);
   drupal_add_tabledrag('menu-overview', 'order', 'sibling', 'menu-weight');
 
