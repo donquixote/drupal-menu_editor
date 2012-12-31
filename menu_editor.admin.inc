@@ -386,7 +386,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
           }
         }
         $updated_items[$item_key] = $element['#item'];
-      } else if ($v['delete']) {
+      } else if (!empty($v['delete'])) {
         // delete existing item
         if (is_numeric($v['mlid'])) {
           menu_link_delete($v['mlid']);
@@ -408,7 +408,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
         $updated_items[$item_key] = $element['#item'];
       }
       // langcode is a special case as well
-      if ($form['#multilingual_menu']) {
+      if (!empty($form['#multilingual_menu'])) {
         $langcode = isset($element['language']['#default_value']) ? $element['language']['#default_value'] : $element['language']['#value'];
         if ($v['language'] != $langcode) {
           $element['#item']['language'] = $v['language'];
@@ -481,7 +481,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
     }
 
     // drupal_set_message('<pre>' . print_r($item, true) . '</pre>');
-    if ($item['plid'] && !is_numeric($item['plid'])) {
+    if (!empty($item['plid']) && !is_numeric($item['plid'])) {
       if (isset($mlids["mlid-$item[plid]"])) {
         $item['plid'] = $mlids["mlid-$item[plid]"];
       }
