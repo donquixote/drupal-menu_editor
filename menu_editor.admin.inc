@@ -534,9 +534,9 @@ function theme_menu_editor_overview_form($variables) {
   $header[] = t('Menu item');
   $header[] = t('Title');
   $header[] = t('Path');
-  $header[] = array('data' => t('Descr.'), 'class' => 'description');
-  $header[] = array('data' => t('En.'), 'class' => 'checkbox');
-  $header[] = array('data' => t('Exp.'), 'class' => 'checkbox');
+  $header[] = array('data' => t('Descr.', array(), array('context' => 'description')), 'class' => 'description');
+  $header[] = array('data' => t('En.', array(), array('context' => 'enabled')), 'class' => 'checkbox');
+  $header[] = array('data' => t('Exp.', array(), array('context' => 'expanded')), 'class' => 'checkbox');
   $header[] = t('Weight');
   if ($i18n_menu) {
     $header[] = t('Language');
