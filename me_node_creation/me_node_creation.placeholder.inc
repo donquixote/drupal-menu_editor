@@ -11,7 +11,9 @@
  *   TODO: We could instead return a renderable array.
  */
 function menu_editor_placeholder_page($item) {
-  drupal_set_title("$item[link_title] - Under Construction");
+  drupal_set_title(t('!link_title - Under Construction', array(
+    '!link_title' => $item['link_title'],
+  )));
   $html = '';
   foreach (node_type_get_types() as $type_name => $type_info) {
     if (me_node_creation_create_node_access($type_info)) {
