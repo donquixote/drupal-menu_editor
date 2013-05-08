@@ -99,8 +99,14 @@ function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
         $max_root_weight = $weight;
       }
       $path = $item['link_path'];
-      if (isset($item['options']['query'])) {
-        $path .= '?'. $item['options']['query'];
+      if (!empty($item['options']['query'])) {
+        if (is_array($item['options']['query'])) {
+          $path .= '?'. drupal_http_build_query($item['options']['query']);
+        }
+        else {
+          // Query could be a string, due to a malfunction in previous versions of this module.
+          $path .= '?'. $item['options']['query'];
+        }
       }
       if (isset($item['options']['fragment'])) {
         $path .= '#'. $item['options']['fragment'];
@@ -402,6 +408,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
           }
         }
       }
+
       // Hidden is a special case, the value needs to be reversed.
       if ($v['hidden'] != $element['hidden']['#default_value']) {
         $element['#item']['hidden'] = !$v['hidden'];
@@ -457,7 +464,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
         $parsed_link = parse_url($link_path);
 
         if (isset($parsed_link['query'])) {
-          $item['options']['query'] = $parsed_link['query'];
+          $item['options']['query'] = drupal_get_query_array($parsed_link['query']);
         }
         else {
           unset($item['options']['query']);
