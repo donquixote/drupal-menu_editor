@@ -25,9 +25,9 @@ function menu_editor_menu() {
 function menu_editor_permission() {
   $menus = menu_get_menus(TRUE);
   $perm = array();
-  foreach ($menus as $menu) {
-    $perm["menu edit $menu"] = array(
-      'title' => t("Menu edit $menu"),
+  foreach ($menus as $menu_machine_name => $menu_display_name) {
+    $perm["menu edit $menu_machine_name"] = array(
+      'title' => t("Menu editor: Edit @menu", array('@menu' => $menu_display_name)),
     );
   }
   return $perm;
