@@ -402,9 +402,10 @@ function menu_editor_overview_form_submit($form, &$form_state) {
           }
         }
       }
-      // Hidden is a special case, the value needs to be reversed.
-      if ($v['hidden'] != $element['hidden']['#default_value']) {
-        $element['#item']['hidden'] = !$v['hidden'];
+      // Hidden is a special case, the value needs to be inverted.
+      // Besides, while we operate with boolean, the database wants numeric 0/1.
+      if ($v['hidden'] xor $element['hidden']['#default_value']) {
+        $element['#item']['hidden'] = empty($v['hidden']) ? 1 : 0;
         $updated_items[$item_key] = $element['#item'];
       }
       // langcode is a special case as well
