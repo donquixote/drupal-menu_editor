@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Page callback for node/add/%node_type/mlid/%menu_editor_mlid
  *

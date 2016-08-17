@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Form for editing an entire menu tree at once.
  *
@@ -84,7 +83,6 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
 
   return $form;
 }
-
 
 /**
  * Recursive helper function for menu_overview_form().
@@ -268,7 +266,6 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $mult
   return $element;
 }
 
-
 /**
  * Weight textfield validation function
  * Stolen from http://drupal.org/project/tiny_menu_editor
@@ -310,7 +307,6 @@ function menu_editor_overview_form_validate($form, &$form_state) {
     }
   }
 }
-
 
 /**
  * Validate form values for a menu link being added or edited.
@@ -366,7 +362,6 @@ function menu_editor_overview_form_validate_new_item($item) {
   // TODO: add some sanity checks
   return true;
 }
-
 
 /**
  * Submit handler for the menu overview form.
@@ -543,10 +538,6 @@ function menu_editor_overview_form_submit($form, &$form_state) {
     drupal_set_message(t('There were errors saving the following menu links:<br/>' . implode('<br/>', $errors)), 'error');
   }
 }
-
-
-
-
 
 /**
  * Theme the menu overview form into a table.

@@ -47,7 +47,6 @@ function me_node_creation_menu() {
   return $items;
 }
 
-
 /**
  * Implements hook_form_alter()
  *
@@ -66,7 +65,6 @@ function me_node_creation_form_alter(&$form, &$form_state, $form_id) {
   module_load_include('create.inc', 'me_node_creation');
   return _me_node_creation_form_alter($form, $node);
 }
-
 
 /**
  * Implements hook_node_insert()
@@ -103,7 +101,6 @@ function me_node_creation_crumbs_plugins($api) {
 
 // Wildcard loaders
 // -----------------------------------------------------------------------------
-
 
 /**
  * Wildcard loader for %menu_editor_menu_link
@@ -179,7 +176,6 @@ function me_node_creation_title($type_arg, $item) {
 
 // Access callbacks
 // -----------------------------------------------------------------------------
-
 
 /**
  * Access callback for node/add/%node_type/mlid/%menu_editor_mlid
