@@ -170,4 +170,3 @@ function me_path_autocomplete_form_menu_editor_overview_form_alter(array &$form,
     $form[$element_key]['link_path']['#autocomplete_path'] = 'mepac/autocomplete';
   }
 }
-

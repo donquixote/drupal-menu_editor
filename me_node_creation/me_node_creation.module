@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Implements hook_permission()
  */
@@ -11,7 +10,6 @@ function me_node_creation_permission() {
     ),
   );
 }
-
 
 /**
  * Implements hook_menu()
@@ -88,7 +86,6 @@ function me_node_creation_node_insert($node) {
   }
 }
 
-
 /**
  * Implements hook_crumbs_plugins()
  *
@@ -140,7 +137,6 @@ function menu_editor_menu_link_load($mlid) {
 // Title callbacks
 // -----------------------------------------------------------------------------
 
-
 /**
  * Title callback for mlid/%menu_link/under-construction
  * 
@@ -153,7 +149,6 @@ function menu_editor_placeholder_title($item) {
   // _menu_link_translate($item);
   return $item['link_title'];
 }
-
 
 /**
  * Title for menu links or tabs.
@@ -199,7 +194,6 @@ function me_node_creation_create_node_access($type) {
 
 // Utility
 // -----------------------------------------------------------------------------
-
 
 /**
  * @return array

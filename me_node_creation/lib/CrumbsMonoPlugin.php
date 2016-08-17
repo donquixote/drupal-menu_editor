@@ -1,6 +1,5 @@
 <?php
 
-
 class me_node_creation_CrumbsMonoPlugin implements crumbs_MonoPlugin {
 
   /**

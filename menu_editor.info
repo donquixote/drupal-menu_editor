@@ -3,4 +3,3 @@ description = Improved interface for menu editing.
 package = Menu
 core = 7.x
 dependencies[] = menu
-
