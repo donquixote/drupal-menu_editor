@@ -68,6 +68,10 @@ function menu_editor_theme() {
 
 /**
  * Title callback for the menu overview page and links.
+ *
+ * @param array $menu
+ *
+ * @return string
  */
 function menu_editor_overview_title($menu) {
   return $menu['title'];

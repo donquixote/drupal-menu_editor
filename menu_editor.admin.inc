@@ -6,6 +6,12 @@
  *
  * Shows for one menu the menu items accessible to the current user and
  * relevant operations.
+ *
+ * @param array $form
+ * @param array $form_state
+ * @param array $menu
+ *
+ * @return array
  */
 function menu_editor_overview_form($form, &$form_state, $menu) {
   global $menu_admin;
@@ -82,6 +88,13 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
 
 /**
  * Recursive helper function for menu_overview_form().
+ *
+ * @param array $form
+ * @param array $form_state
+ * @param array $tree
+ *
+ * @return int
+ *   The max root weight (whatever this means)
  */
 function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
   $max_root_weight = 0;
@@ -260,6 +273,9 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $mult
  * Weight textfield validation function
  * Stolen from http://drupal.org/project/tiny_menu_editor
  * Big thanks to Dmitriy.trt
+ *
+ * @param array $element
+ * @param array $form_state
  */
 function _menu_editor_valid_weight($element, &$form_state) {
   if ((isset($element['#value']) && $element['#value'] !== '') || !empty($element['#required'])) {
@@ -298,6 +314,10 @@ function menu_editor_overview_form_validate($form, &$form_state) {
 
 /**
  * Validate form values for a menu link being added or edited.
+ *
+ * @param array $element
+ * @param string $link_path
+ * @param string $error_key_prefix
  */
 function menu_editor_validate_item(&$element, $link_path, $error_key_prefix) {
   $placeholders = menu_editor_get_placeholders();
@@ -336,9 +356,11 @@ function menu_editor_validate_item(&$element, $link_path, $error_key_prefix) {
 
 
 /**
- * validate a menu item that was dynamically added through javascript
+ * Validates a menu item that was dynamically added through javascript.
  * 
- * @param unknown_type $item
+ * @param array|mixed $item
+ *
+ * @return bool
  */
 function menu_editor_overview_form_validate_new_item($item) {
   // TODO: add some sanity checks
@@ -351,6 +373,9 @@ function menu_editor_overview_form_validate_new_item($item) {
  *
  * This function takes great care in saving parent items first, then items
  * underneath them. Saving items in the incorrect order can break the menu tree.
+ *
+ * @param array $form
+ * @param array $form_state
  *
  * @see menu_overview_form()
  */
@@ -525,6 +550,10 @@ function menu_editor_overview_form_submit($form, &$form_state) {
 
 /**
  * Theme the menu overview form into a table.
+ *
+ * @param array $variables
+ *
+ * @return string
  *
  * @ingroup themeable
  */

@@ -6,6 +6,7 @@
  * 
  * @param array $item
  *   The menu link, as returned by menu_link_load()
+ *
  * @return string
  *   Rendered HTML
  *   TODO: We could instead return a renderable array.

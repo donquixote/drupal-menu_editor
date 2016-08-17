@@ -3,6 +3,11 @@
 
 /**
  * Page callback for node/add/%node_type/mlid/%menu_editor_mlid
+ *
+ * @param object $type
+ * @param array $menu_item
+ *
+ * @return array|mixed
  */
 function me_node_creation_create_node($type, $menu_item) {
   global $user;

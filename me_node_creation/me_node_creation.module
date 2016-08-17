@@ -43,6 +43,10 @@ function me_node_creation_menu() {
 
 /**
  * Implements hook_form_alter()
+ *
+ * @param array $form
+ * @param array $form_state
+ * @param string $form_id
  */
 function me_node_creation_form_alter(&$form, &$form_state, $form_id) {
   if (empty($form['#node_edit_form']) || empty($form['#node'])) {
@@ -59,6 +63,8 @@ function me_node_creation_form_alter(&$form, &$form_state, $form_id) {
 
 /**
  * Implements hook_node_insert()
+ *
+ * @param object $node
  */
 function me_node_creation_node_insert($node) {
   $menu_item = @$node->me_node_creation_menu_item;
@@ -80,6 +86,8 @@ function me_node_creation_node_insert($node) {
 
 /**
  * Implements hook_crumbs_plugins()
+ *
+ * @param crumbs_InjectedAPI_hookCrumbsPlugins $api
  */
 function me_node_creation_crumbs_plugins($api) {
   $api->monoPlugin();
@@ -95,6 +103,10 @@ function me_node_creation_crumbs_plugins($api) {
  * This is similar to menu_link_load(), but we do some loop prevention.
  *
  * TODO: Test if the by-reference does not explode in some edge cases.
+ *
+ * @param int $mlid
+ *
+ * @return bool
  */
 function menu_editor_menu_link_load($mlid) {
   static $_cache = array();
@@ -143,8 +155,10 @@ function menu_editor_placeholder_title($item) {
  * Title for menu links or tabs.
  * The page title can be different!
  * 
- * @param $type_arg
- * @param $item
+ * @param string $type_arg
+ * @param array|mixed $item
+ *
+ * @return string
  */
 function me_node_creation_title($type_arg, $item) {
   foreach (node_type_get_types() as $type_name => $type_object) {
@@ -162,6 +176,10 @@ function me_node_creation_title($type_arg, $item) {
 
 /**
  * Access callback for node/add/%node_type/mlid/%menu_editor_mlid
+ *
+ * @param object|mixed $type
+ *
+ * @return bool
  */
 function me_node_creation_create_node_access($type) {
   if (!is_object($type)) {

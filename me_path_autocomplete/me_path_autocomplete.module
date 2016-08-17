@@ -12,7 +12,8 @@
 /**
  * Implements hook_menu().
  *
- * @return An array of menu items.
+ * @return array
+ *   An array of menu items.
  */
 function me_path_autocomplete_menu() {
   $items = array();
@@ -30,11 +31,13 @@ function me_path_autocomplete_menu() {
 }
 
 /**
- * Find nodes and URL aliases based on title.
- * @param $string
+ * Page callback for 'mepac/autocomplete'.
+ *
+ * Finds nodes and URL aliases based on title.
+ * Sets a http header, and prints json output.
+ *
+ * @param string $string
  *   Title of element to find.
- * @return
- *   List of elements with path as key.
  */
 function me_path_autocomplete($string = NULL) {
   $args = func_get_args();
@@ -96,6 +99,9 @@ function me_path_autocomplete($string = NULL) {
  * Implements hook_form_FORM_ID_alter().
  *
  * Change path field to autocomplete field.
+ *
+ * @param array $form
+ * @param array $form_state
  */
 function me_path_autocomplete_form_menu_editor_overview_form_alter(&$form, &$form_state) {
   foreach (element_children($form) as $element_key) {
