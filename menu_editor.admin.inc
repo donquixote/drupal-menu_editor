@@ -293,7 +293,7 @@ function _menu_editor_valid_weight(array $element, array &$form_state) {
  * @param array $form
  * @param array $form_state
  */
-function menu_editor_overview_form_validate($form, &$form_state) {
+function menu_editor_overview_form_validate(array $form, array &$form_state) {
   $form_values = &$form_state['values'];
 
   // Check existing items.
