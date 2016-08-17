@@ -18,19 +18,26 @@ function me_node_creation_permission() {
  */
 function me_node_creation_menu() {
   $items = array();
+  /* @see node_type_load() */
+  /* @see menu_editor_menu_link_load() */
   $items['node/add/%node_type/mlid/%menu_editor_menu_link'] = array(
     'load arguments' => array(2, 4),
     'title' => 'Create a node',
+    /* @see me_node_creation_create_node() */
     'page callback' => 'me_node_creation_create_node',
     'page arguments' => array(2, 4),
     'file' => 'me_node_creation.create.inc',
+    /* @see me_node_creation_create_node_access() */
     'access callback' => 'me_node_creation_create_node_access',
     'access arguments' => array(2),
   );
+  /* @see menu_editor_menu_link_load() */
   $items['mlid/%menu_editor_menu_link/under-construction'] = array(
     'title' => 'Under Construction',
+    /* @see menu_editor_placeholder_title() */
     'title callback' => 'menu_editor_placeholder_title',
     'title arguments' => array(1),
+    /* @see menu_editor_placeholder_page() */
     'page callback' => 'menu_editor_placeholder_page',
     'page arguments' => array(1),
     'file' => 'me_node_creation.placeholder.inc',
