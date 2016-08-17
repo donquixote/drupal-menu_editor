@@ -13,7 +13,6 @@
  * @return array
  */
 function menu_editor_overview_form(array $form, array &$form_state, array $menu) {
-  global $menu_admin;
   $form['#attached']['css'] = array(drupal_get_path('module', 'menu') . '/menu.css');
   $sql = "
     SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.delivery_callback, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
@@ -29,9 +28,9 @@ function menu_editor_overview_form(array $form, array &$form_state, array $menu)
   $node_links = array();
   menu_tree_collect_node_links($tree, $node_links);
   // We indicate that a menu administrator is running the menu access check.
-  $menu_admin = TRUE;
+  $GLOBALS['menu_admin'] = TRUE;
   menu_tree_check_access($tree, $node_links);
-  $menu_admin = FALSE;
+  $GLOBALS['menu_admin'] = FALSE;
 
   $form = array('#tree' => TRUE);
   $form['#multilingual_menu'] = FALSE;
