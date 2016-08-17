@@ -196,7 +196,7 @@ function me_node_creation_create_node_access($type) {
 // -----------------------------------------------------------------------------
 
 /**
- * @return array
+ * @return string[]
  *   Array of placeholders
  */
 function me_node_creation_menu_editor_placeholders() {
