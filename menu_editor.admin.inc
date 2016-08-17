@@ -208,7 +208,13 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
   return $max_root_weight;
 }
 
-
+/**
+ * @param int|string $item_mlid
+ * @param array $default_values
+ * @param bool $multilingual_menu
+ *
+ * @return array
+ */
 function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $multilingual_menu = FALSE) {
 
   foreach (menu_editor_get_placeholders() as $code => $path) {
