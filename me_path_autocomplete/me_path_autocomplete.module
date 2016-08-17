@@ -103,7 +103,7 @@ function me_path_autocomplete($string = NULL) {
  * @param array $form
  * @param array $form_state
  */
-function me_path_autocomplete_form_menu_editor_overview_form_alter(&$form, &$form_state) {
+function me_path_autocomplete_form_menu_editor_overview_form_alter(array &$form, array &$form_state) {
   foreach (element_children($form) as $element_key) {
     $form[$element_key]['link_path']['#autocomplete_path'] = 'mepac/autocomplete';
   }

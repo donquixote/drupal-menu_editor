@@ -54,7 +54,7 @@ function me_node_creation_menu() {
  * @param array $form_state
  * @param string $form_id
  */
-function me_node_creation_form_alter(&$form, &$form_state, $form_id) {
+function me_node_creation_form_alter(array &$form, array &$form_state, $form_id) {
   if (empty($form['#node_edit_form']) || empty($form['#node'])) {
     return;
   }

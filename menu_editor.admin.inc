@@ -12,7 +12,7 @@
  *
  * @return array
  */
-function menu_editor_overview_form($form, &$form_state, $menu) {
+function menu_editor_overview_form(array $form, array &$form_state, array $menu) {
   global $menu_admin;
   $form['#attached']['css'] = array(drupal_get_path('module', 'menu') . '/menu.css');
   $sql = "
@@ -94,7 +94,7 @@ function menu_editor_overview_form($form, &$form_state, $menu) {
  * @return int
  *   The max root weight (whatever this means)
  */
-function _menu_editor_overview_tree_form(&$form, &$form_state, $tree) {
+function _menu_editor_overview_tree_form(array &$form, array &$form_state, array $tree) {
   $max_root_weight = 0;
   foreach ($tree as $data) {
     $title = '';
@@ -274,7 +274,7 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $mult
  * @param array $element
  * @param array $form_state
  */
-function _menu_editor_valid_weight($element, &$form_state) {
+function _menu_editor_valid_weight(array $element, array &$form_state) {
   if ((isset($element['#value']) && $element['#value'] !== '') || !empty($element['#required'])) {
     if (!preg_match('/^\-?\d+$/', $element['#value'])) {
        form_error($element, t('Weight has to be an integer value.'));
@@ -315,7 +315,7 @@ function menu_editor_overview_form_validate($form, &$form_state) {
  * @param string $link_path
  * @param string $error_key_prefix
  */
-function menu_editor_validate_item(&$element, $link_path, $error_key_prefix) {
+function menu_editor_validate_item(array &$element, $link_path, $error_key_prefix) {
   $placeholders = menu_editor_get_placeholders();
   if (isset($placeholders[$link_path])) {
     // it would be hard to check access,
@@ -374,7 +374,7 @@ function menu_editor_overview_form_validate_new_item($item) {
  *
  * @see menu_overview_form()
  */
-function menu_editor_overview_form_submit($form, &$form_state) {
+function menu_editor_overview_form_submit(array $form, array &$form_state) {
 
   // When dealing with saving menu items, the order in which these items are
   // saved is critical. If a changed child item is saved before its parent,
@@ -548,7 +548,7 @@ function menu_editor_overview_form_submit($form, &$form_state) {
  *
  * @ingroup themeable
  */
-function theme_menu_editor_overview_form($variables) {
+function theme_menu_editor_overview_form(array $variables) {
   $form = $variables['form'];
   drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
   drupal_add_js(drupal_get_path('module', 'menu_editor') . '/menu_editor.js');

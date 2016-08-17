@@ -73,7 +73,7 @@ function menu_editor_theme() {
  *
  * @return string
  */
-function menu_editor_overview_title($menu) {
+function menu_editor_overview_title(array $menu) {
   return $menu['title'];
 }
 

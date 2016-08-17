@@ -8,7 +8,7 @@
  *
  * @return array|mixed
  */
-function me_node_creation_create_node($type, $menu_item) {
+function me_node_creation_create_node($type, array $menu_item) {
   global $user;
 
   drupal_set_title(t('Create @name', array('@name' => $type->name)), PASS_THROUGH);
