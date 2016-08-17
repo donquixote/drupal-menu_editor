@@ -57,7 +57,6 @@ function menu_editor_overview_form(array $form, array &$form_state, array $menu)
     break;
   }
 
-
   for ($i=0; $i<8; ++$i) {
     // new menu item
     $default_values['mlid'] = 'new' . $i;
@@ -282,7 +281,7 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $mult
 function _menu_editor_valid_weight(array $element, array &$form_state) {
   if ((isset($element['#value']) && $element['#value'] !== '') || !empty($element['#required'])) {
     if (!preg_match('/^\-?\d+$/', $element['#value'])) {
-       form_error($element, t('Weight has to be an integer value.'));
+      form_error($element, t('Weight has to be an integer value.'));
     }
   }
 }
@@ -360,10 +359,9 @@ function menu_editor_validate_item(array &$element, $link_path, $error_key_prefi
   }
 }
 
-
 /**
  * Validates a menu item that was dynamically added through javascript.
- * 
+ *
  * @param array|mixed $item
  *
  * @return bool
@@ -415,7 +413,7 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
         $element['#item']['menu_name'] = $menu_name;
         // Set all fields in this menu item.
         foreach ($fields as $field) {
-          // Check if field is set since some fields could not be NULL when 
+          // Check if field is set since some fields could not be NULL when
           // doing menu_link_save().
           if (isset($v[$field])) {
             $element['#item'][$field] = $v[$field];
@@ -643,4 +641,3 @@ function theme_menu_editor_overview_form(array $variables) {
   $output .= drupal_render_children($form);
   return $output;
 }
-
