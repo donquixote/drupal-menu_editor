@@ -58,13 +58,13 @@ function me_path_autocomplete($string = NULL) {
   // Get a list of all nodes where the title matches the given string.
   if (strlen($string) > 1) {
     $like_placeholder = (strlen($string) > 3) ? "%" . db_like($string) . "%" : db_like($string) . "%";
-    $nodes = db_select('node', 'n')
-      ->fields('n')
-      ->condition('title', $like_placeholder, 'LIKE')
-      ->range(0, 8)
-      ->execute();
 
-    foreach ($nodes as $node) {
+    $q = db_select('node', 'n');
+    $q->fields('n');
+    $q->condition('title', $like_placeholder, 'LIKE');
+    $q->range(0, 8);
+
+    foreach ($q->execute() as $node) {
       // Add node path and title to list.
       if (node_access('view', $node) && $node->status) {
         $node_title = check_plain($node->title);
@@ -76,13 +76,12 @@ function me_path_autocomplete($string = NULL) {
     if (module_exists('path')) {
       // Get a list of all URL aliases where the destination matches the given
       // string.
-      $aliases = db_select('url_alias')
-        ->fields('url_alias')
-        ->condition('alias', $like_placeholder, 'LIKE')
-        ->range(0, 8)
-        ->execute();
+      $q = db_select('url_alias');
+      $q->fields('url_alias');
+      $q->condition('alias', $like_placeholder, 'LIKE');
+      $q->range(0, 8);
 
-      foreach ($aliases as $alias) {
+      foreach ($q->execute() as $alias) {
         // Add alias source and destination to list (and add a special marker to
         // the item).
         $lang = $alias->language !== LANGUAGE_NONE ? ($alias->language . ': ') : '';
