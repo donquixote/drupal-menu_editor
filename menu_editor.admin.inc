@@ -287,7 +287,12 @@ function _menu_editor_valid_weight(array $element, array &$form_state) {
   }
 }
 
-
+/**
+ * Form validation callback for menu_editor_overview_form.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
 function menu_editor_overview_form_validate($form, &$form_state) {
   $form_values = &$form_state['values'];
 
