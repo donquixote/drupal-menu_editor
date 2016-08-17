@@ -3,7 +3,7 @@
 /**
  * @file
  * Find node paths on menu item creation via autocomplete.
- * 
+ *
  * This is a shameless clone of
  * http://drupal.org/project/mpac
  * by stBorchert
