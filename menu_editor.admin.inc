@@ -505,7 +505,7 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
           unset($item['options']['fragment']);
         }
 
-        if ($link_path != $parsed_link['path']) {
+        if ($link_path !== $parsed_link['path']) {
           $link_path = $parsed_link['path'];
         }
       }
