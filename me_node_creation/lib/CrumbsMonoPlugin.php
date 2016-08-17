@@ -16,5 +16,7 @@ class me_node_creation_CrumbsMonoPlugin implements crumbs_MonoPlugin {
         // Let the menu.hierarchy.* plugin do its thing
         break;
     }
+
+    return NULL;
   }
 }
