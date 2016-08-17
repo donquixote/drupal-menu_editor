@@ -225,10 +225,12 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $mult
   $element['link_title'] = array(
     '#type' => 'textfield',
     '#size' => 25,
+    '#maxlength' => 128,
   );
   $element['link_path'] = array(
     '#type' => 'textfield',
     '#size' => 25,
+    '#maxlength' => 255,
   );
   $element['description'] = array(
     '#type' => 'textarea',
