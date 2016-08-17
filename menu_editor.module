@@ -33,6 +33,11 @@ function menu_editor_permission() {
   return $perm;
 }
 
+/**
+ * @param array $menu
+ *
+ * @return bool
+ */
 function menu_editor_form_access($menu) {
   return
     user_access('administer menu') ||
@@ -55,7 +60,9 @@ function menu_editor_form_access($menu) {
 // }
 
 /**
- * Implemenation of hook_theme().
+ * Implements hook_theme().
+ *
+ * @return array[]
  */
 function menu_editor_theme() {
   return array(
@@ -77,8 +84,9 @@ function menu_editor_overview_title(array $menu) {
   return $menu['title'];
 }
 
-
-
+/**
+ * @return string[]
+ */
 function menu_editor_get_placeholders() {
   static $placeholders;
   if (!isset($placeholders)) {
@@ -87,6 +95,12 @@ function menu_editor_get_placeholders() {
   return $placeholders;
 }
 
+/**
+ * @param string $placeholder
+ * @param string|int $mlid
+ *
+ * @return string
+ */
 function menu_editor_get_path_for_placeholder($placeholder, $mlid) {
   $placeholders = menu_editor_get_placeholders();
   if (isset($placeholders[$placeholder])) {

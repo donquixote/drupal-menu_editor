@@ -28,7 +28,10 @@ function me_node_creation_create_node($type, array $menu_item) {
   return $form;
 }
 
-
+/**
+ * @param array $form
+ * @param object $node
+ */
 function _me_node_creation_form_alter(&$form, $node) {
   $menu_item = $node->me_node_creation_menu_item;
 
