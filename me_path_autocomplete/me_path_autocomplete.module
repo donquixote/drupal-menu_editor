@@ -69,7 +69,7 @@ function me_path_autocomplete($string = NULL) {
       if (node_access('view', $node) && $node->status) {
         $node_title = check_plain($node->title);
         $nid = $node->nid;
-        $lang = $node->language != LANGUAGE_NONE ? ($node->language . ': ') : '';
+        $lang = $node->language !== LANGUAGE_NONE ? ($node->language . ': ') : '';
         $matches['node/'. $node->nid] = $lang . "$node_title [nid:$nid]";
       }
     }
@@ -85,7 +85,7 @@ function me_path_autocomplete($string = NULL) {
       foreach ($aliases as $alias) {
         // Add alias source and destination to list (and add a special marker to
         // the item).
-        $lang = $alias->language != LANGUAGE_NONE ? ($alias->language . ': ') : '';
+        $lang = $alias->language !== LANGUAGE_NONE ? ($alias->language . ': ') : '';
         $src = check_plain($alias->source);
         $dst = check_plain($alias->alias);
         $matches[$alias->source] = $lang . "$dst | $src";

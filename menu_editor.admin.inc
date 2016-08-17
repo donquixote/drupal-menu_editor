@@ -191,7 +191,7 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
       }
 
       // Only items created by the menu module can be deleted.
-      if ($item['module'] == 'menu' || $item['updated'] == 1) { 
+      if ($item['module'] === 'menu' || (string)$item['updated'] === '1') {
         $form[$item_key]['delete'] = array(
           '#type' => 'checkbox',
           '#title' => t('delete'),
@@ -212,7 +212,7 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
 function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $multilingual_menu = FALSE) {
 
   foreach (menu_editor_get_placeholders() as $code => $path) {
-    if (str_replace('@mlid', $item_mlid, $path) == $default_values['link_path']) {
+    if (str_replace('@mlid', $item_mlid, $path) === $default_values['link_path']) {
       $default_values['link_path'] = $code;
     }
   }
@@ -324,7 +324,7 @@ function menu_editor_validate_item(array &$element, $link_path, $error_key_prefi
     return;
   }
 
-  if ($element['link_path']['#default_value'] == $link_path) {
+  if ($element['link_path']['#default_value'] === $link_path) {
     // link_path is the only field that we check,
     // and we don't complain about existing link paths.
     return;
@@ -422,6 +422,8 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
         // update existing item
         // Update any fields that have changed in this menu item.
         foreach ($fields as $field) {
+          // Using != instead of !== to support '5' == 5.
+          /** @noinspection TypeUnsafeComparisonInspection */
           if ($v[$field] != $element[$field]['#default_value']) {
             $element['#item'][$field] = $v[$field];
             $updated_items[$item_key] = $element['#item'];
@@ -437,7 +439,7 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
       // langcode is a special case as well
       if (!empty($form['#multilingual_menu'])) {
         $langcode = isset($element['language']['#default_value']) ? $element['language']['#default_value'] : $element['language']['#value'];
-        if ($v['language'] != $langcode) {
+        if ($v['language'] !== $langcode) {
           $element['#item']['language'] = $v['language'];
           $updated_items[$item_key] = $element['#item'];
         }
@@ -618,8 +620,8 @@ function theme_menu_editor_overview_form(array $variables) {
       $row['class'] = array('draggable');
       if ($i18n_menu) {
         $langcode = isset($element['language']['#default_value']) ? $element['language']['#default_value'] : $element['language']['#value'];
-        $row['class'][] = ($langcode != LANGUAGE_NONE) ? 'langcode-'.$langcode : 'all-languages';
-        $row['class'][]= ($langcode == $language->language) ? 'active-language' : '';
+        $row['class'][] = ($langcode !== LANGUAGE_NONE) ? 'langcode-'.$langcode : 'all-languages';
+        $row['class'][]= ($langcode === $language->language) ? 'active-language' : '';
       }
       $rows[$item_key] = $row;
     }
