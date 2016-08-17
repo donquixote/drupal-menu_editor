@@ -139,7 +139,7 @@ function menu_editor_menu_link_load($mlid) {
 
 /**
  * Title callback for mlid/%menu_link/under-construction
- * 
+ *
  * @param array $item
  *   The menu link, as returned by menu_link_load()
  * @return string
@@ -153,7 +153,7 @@ function menu_editor_placeholder_title($item) {
 /**
  * Title for menu links or tabs.
  * The page title can be different!
- * 
+ *
  * @param string $type_arg
  * @param array|mixed $item
  *

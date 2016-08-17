@@ -46,7 +46,7 @@ function _me_node_creation_form_alter(array &$form, $node) {
   }
 
   $txt = t('The created node will be associated with the chosen menu item (!mlid),<br/>with link title "@title"', array(
-    '!mlid' => $mlid_text, 
+    '!mlid' => $mlid_text,
     '@title' => $menu_item['link_title'],
   ));
   $txt = "<p>$txt</p>";
