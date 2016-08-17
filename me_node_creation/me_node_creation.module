@@ -63,7 +63,7 @@ function me_node_creation_form_alter(array &$form, array &$form_state, $form_id)
     return;
   }
   module_load_include('create.inc', 'me_node_creation');
-  return _me_node_creation_form_alter($form, $node);
+  _me_node_creation_form_alter($form, $node);
 }
 
 /**
