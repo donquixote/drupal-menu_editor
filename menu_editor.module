@@ -90,6 +90,7 @@ function menu_editor_overview_title(array $menu) {
 function menu_editor_get_placeholders() {
   static $placeholders;
   if (!isset($placeholders)) {
+    /* @see hook_menu_editor_placeholders() */
     $placeholders = module_invoke_all('menu_editor_placeholders');
   }
   return $placeholders;

@@ -87,6 +87,7 @@ function _me_path_autocomplete_get_matches($string) {
 function _me_path_autocomplete_get_matches_for_placeholders($string) {
 
   $matches = array();
+  /* @see hook_menu_editor_placeholders() */
   foreach (module_invoke_all('menu_editor_placeholders') as $placeholder_code => $placeholder_path) {
     if ($string === '' || false !== strpos($placeholder_code, $string)) {
       $matches[$placeholder_code] = htmlentities($placeholder_code);
