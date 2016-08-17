@@ -21,6 +21,7 @@ function me_path_autocomplete_menu() {
   $items['mepac/autocomplete'] = array(
     'title' => 'Menu path autocomplete',
     'description' => 'Autocomplete callback for menu path autocomplete',
+    /* @see me_path_autocomplete() */
     'page callback' => 'me_path_autocomplete',
     'access callback' => 'user_access',
     'access arguments' => array('access content'),
