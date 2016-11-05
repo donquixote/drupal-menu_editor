@@ -48,7 +48,7 @@ function menu_editor_overview_form(array $form, array &$form_state, array $menu)
     'link_title' => '',
     'link_path' => '<front>',
     'description' => '',
-    'hidden' => true,
+    'enabled' => true,
     'expanded' => false,
     'weight' => 0,
     // 'mlid' => NULL,  // this is different for every single one
@@ -130,7 +130,7 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
         'link_title' => $item['link_title'],
         'link_path' => $path,
         'description' => isset($item['options']['attributes']['title']) ? $item['options']['attributes']['title'] : '',
-        'hidden'   => !$item['hidden'],
+        'enabled'   => !$item['hidden'],
         'expanded' => $item['expanded'],
         'weight'   => $weight,
         'plid'     => $plid,
@@ -244,7 +244,7 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $mult
     '#rows' => 1,
     '#resizable' => FALSE,
   );
-  $element['hidden'] = array(
+  $element['enabled'] = array(
     '#type' => 'checkbox',
   );
   $element['expanded'] = array(
@@ -452,9 +452,13 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
       }
       // Hidden is a special case, the value needs to be inverted.
       // Besides, while we operate with boolean, the database wants numeric 0/1.
-      if ($v['hidden'] xor $element['hidden']['#default_value']) {
-        $element['#item']['hidden'] = empty($v['hidden']) ? 1 : 0;
+      if ($v['enabled'] xor $element['enabled']['#default_value']) {
+        // Checkbox for 'enabled' was changed.
+        $element['#item']['hidden'] = empty($v['enabled']) ? 1 : 0;
         $updated_items[$item_key] = $element['#item'];
+      }
+      else {
+        // Checkbox for 'enabled' was not changed.
       }
       // langcode is a special case as well
       if (!empty($form['#multilingual_menu'])) {
@@ -602,7 +606,7 @@ function theme_menu_editor_overview_form(array $variables) {
   $items = array();
 
   foreach (element_children($form) as $item_key) {
-    if (isset($form[$item_key]['hidden'])) {
+    if (isset($form[$item_key]['enabled'])) {
       $element = &$form[$item_key];
 
       // Add special classes to be used for tabledrag.js.
@@ -614,7 +618,7 @@ function theme_menu_editor_overview_form(array $variables) {
       $element['plid']['#type'] = 'hidden';
 
       // Adjust tab index to allow vertical tabbing
-      foreach (array('link_title', 'link_path', 'description', 'hidden', 'expanded') as $i => $key) {
+      foreach (array('link_title', 'link_path', 'description', 'enabled', 'expanded') as $i => $key) {
         $element[$key]['#attributes']['tabindex'] = $i+2;
       }
       $element['link_path']['#attributes']['tabindex'] = 2;
@@ -629,7 +633,7 @@ function theme_menu_editor_overview_form(array $variables) {
       $cells['link_title'] = array('data' => drupal_render($element['link_title']), 'class' => 'title-edit');
       $cells['link_path'] = array('data' => drupal_render($element['link_path']), 'class' => 'path-edit');
       $cells['description'] = array('data' => drupal_render($element['description']), 'class' => 'description');
-      $cells['hidden'] = array('data' => drupal_render($element['hidden']), 'class' => 'checkbox');
+      $cells['enabled'] = array('data' => drupal_render($element['enabled']), 'class' => 'checkbox');
       $cells['expanded'] = array('data' => drupal_render($element['expanded']), 'class' => 'checkbox');
       $cells['mlid'] = drupal_render($element['weight']) . drupal_render($element['plid']) . drupal_render($element['mlid']);
       if ($i18n_menu) {
