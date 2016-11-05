@@ -539,6 +539,12 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
       }
     }
 
+    // @see menu_firstchild_menu_link_alter() expects $link['module'] to be set.
+    $item += array(
+      'module' => 'menu',
+      'hidden' => 0,
+    );
+
     $mlid = menu_link_save($item);
 
     if (is_numeric($mlid)) {
