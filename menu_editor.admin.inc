@@ -200,7 +200,7 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
 
     // process child elements
     if ($data['below']) {
-      _menu_editor_overview_tree_form($form, $form_data, $data['below']);
+      _menu_editor_overview_tree_form($form, $form_state, $data['below']);
     }
   }
   return $max_root_weight;
