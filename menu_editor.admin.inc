@@ -11,6 +11,11 @@
  * @param array $menu
  *
  * @return array
+ *
+ * @see menu_overview_form()
+ * @see menu_edit_item()
+ * @see menu_editor_overview_form_validate()
+ * @see menu_editor_overview_form_submit()
  */
 function menu_editor_overview_form(array $form, array &$form_state, array $menu) {
   $form['#attached']['css'] = array(drupal_get_path('module', 'menu') . '/menu.css');
@@ -293,6 +298,8 @@ function _menu_editor_valid_weight(array $element, array &$form_state) {
  *
  * @param array $form
  * @param array $form_state
+ *
+ * @see menu_editor_overview_form()
  */
 function menu_editor_overview_form_validate(array $form, array &$form_state) {
   $form_values = &$form_state['values'];
@@ -382,7 +389,9 @@ function menu_editor_overview_form_validate_new_item($item) {
  * @param array $form
  * @param array $form_state
  *
- * @see menu_overview_form()
+ * @see menu_editor_overview_form()
+ * @see menu_overview_form_submit()
+ * @see menu_edit_item_submit()
  */
 function menu_editor_overview_form_submit(array $form, array &$form_state) {
 
