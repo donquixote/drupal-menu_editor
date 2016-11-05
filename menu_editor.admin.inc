@@ -43,7 +43,7 @@ function menu_editor_overview_form(array $form, array &$form_state, array $menu)
 
   $max_root_weight = _menu_editor_overview_tree_form($form, $form_state, $tree);
 
-  // default values for all new menu items..
+  // default form values for all new menu items..
   $default_values = array(
     'link_title' => '',
     'link_path' => '<front>',
