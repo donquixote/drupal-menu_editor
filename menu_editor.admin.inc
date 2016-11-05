@@ -62,18 +62,18 @@ function menu_editor_overview_form(array $form, array &$form_state, array $menu)
     break;
   }
 
-  for ($i=0; $i<8; ++$i) {
+  for ($i = 0; $i < 8; ++$i) {
     // new menu item
     $default_values['mlid'] = 'new' . $i;
-    $item_key = 'mlid-new'.$i;
-    $form[$item_key] = _menu_editor_overview_tree_form_item('new'.$i, $default_values, $form['#multilingual_menu']);
+    $item_key = 'mlid-new' . $i;
+    $form[$item_key] = _menu_editor_overview_tree_form_item('new' . $i, $default_values, $form['#multilingual_menu']);
     $form[$item_key]['weight']['#default_value'] = $max_root_weight + $i + 1;
     $form[$item_key]['#item'] = array();
     $form[$item_key]['#attributes'] = array('class' => 'menu-new');
     $form[$item_key]['drag']['#markup'] = t('New menu item');
   }
 
-  $form['#menu'] =  $menu;
+  $form['#menu'] = $menu;
   if (element_children($form)) {
     $form['submit'] = array(
       '#type' => 'submit',
@@ -104,7 +104,7 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
     $item = $data['link'];
     // Don't show callbacks; these have $item['hidden'] < 0.
     if ($item && $item['hidden'] >= 0) {
-      $item_key = 'mlid-'. $item['mlid'];
+      $item_key = 'mlid-' . $item['mlid'];
       // @todo This is bogus. The value might be in $form_state['input'][$item_key], but never in $form_state[$item_key].
       $weight = isset($form_state[$item_key]['weight']) ? $form_state[$item_key]['weight'] : $item['weight'];
       $plid = isset($form_state[$item_key]['plid']) ? $form_state[$item_key]['plid'] : $item['plid'];
@@ -116,24 +116,24 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
       $path = $item['link_path'];
       if (!empty($item['options']['query'])) {
         if (is_array($item['options']['query'])) {
-          $path .= '?'. drupal_http_build_query($item['options']['query']);
+          $path .= '?' . drupal_http_build_query($item['options']['query']);
         }
         else {
           // Query could be a string, due to a malfunction in previous versions of this module.
-          $path .= '?'. $item['options']['query'];
+          $path .= '?' . $item['options']['query'];
         }
       }
       if (isset($item['options']['fragment'])) {
-        $path .= '#'. $item['options']['fragment'];
+        $path .= '#' . $item['options']['fragment'];
       }
       $default_values = array(
         'link_title' => $item['link_title'],
         'link_path' => $path,
         'description' => isset($item['options']['attributes']['title']) ? $item['options']['attributes']['title'] : '',
-        'enabled'   => !$item['hidden'],
+        'enabled' => !$item['hidden'],
         'expanded' => $item['expanded'],
-        'weight'   => $weight,
-        'plid'     => $plid,
+        'weight' => $weight,
+        'plid' => $plid,
         'depth' => 1,
       );
 
@@ -582,7 +582,7 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
  */
 function theme_menu_editor_overview_form(array $variables) {
   $form = $variables['form'];
-  drupal_add_css(drupal_get_path('module', 'menu_editor') .'/menu_editor.css');
+  drupal_add_css(drupal_get_path('module', 'menu_editor') . '/menu_editor.css');
   drupal_add_js(drupal_get_path('module', 'menu_editor') . '/menu_editor.js');
   global $language;
   $i18n_menu = $form['#multilingual_menu'] || $form['#translatable_nodes'];
@@ -600,7 +600,7 @@ function theme_menu_editor_overview_form(array $variables) {
   if ($i18n_menu) {
     $header[] = t('Language');
   }
-  $header[] = array('data'  => t('Delete'), 'class' => 'delete-checkbox');
+  $header[] = array('data' => t('Delete'), 'class' => 'delete-checkbox');
 
   $rows = array();
   $items = array();
