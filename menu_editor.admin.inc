@@ -432,13 +432,15 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
           }
         }
         $updated_items[$item_key] = $element['#item'];
-      } else if (!empty($v['delete'])) {
+      }
+      elseif (!empty($v['delete'])) {
         // delete existing item
         if (is_numeric($v['mlid'])) {
           menu_link_delete($v['mlid']);
         }
         continue;
-      } else {
+      }
+      else {
         // update existing item
         // Update any fields that have changed in this menu item.
         foreach ($fields as $field) {
