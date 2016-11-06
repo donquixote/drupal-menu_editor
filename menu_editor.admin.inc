@@ -68,7 +68,11 @@ function menu_editor_overview_form(array $form, array &$form_state, array $menu)
     $item_key = 'mlid-new' . $i;
     $form[$item_key] = _menu_editor_overview_tree_form_item('new' . $i, $default_values, $form['#multilingual_menu']);
     $form[$item_key]['weight']['#default_value'] = $max_root_weight + $i + 1;
-    $form[$item_key]['#item'] = array();
+    $form[$item_key]['#item'] = array(
+      'module' => 'menu',
+      'hidden' => 0,
+      'menu_name' => $menu['menu_name'],
+    );
     $form[$item_key]['#attributes'] = array('class' => 'menu-new');
     $form[$item_key]['drag']['#markup'] = t('New menu item');
   }
