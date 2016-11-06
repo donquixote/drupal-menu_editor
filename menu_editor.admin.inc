@@ -417,7 +417,9 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
   foreach ($form_values as $item_key => $v) {
     if (isset($form[$item_key]['#item'])) {
       $element = $form[$item_key];
-      if (!is_numeric($v['mlid'])) {
+      $original_item = $item = $element['#item'];
+
+      if (!isset($item['mlid'])) {
         // add new item
         unset($v['mlid']);
         if (!is_string($v['link_title']) || empty($v['link_title'])) {
@@ -432,15 +434,15 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
           // Check if field is set since some fields could not be NULL when
           // doing menu_link_save().
           if (isset($v[$field])) {
-            $element['#item'][$field] = $v[$field];
+            $item[$field] = $v[$field];
           }
         }
-        $updated_items[$item_key] = $element['#item'];
+        $updated_items[$item_key] = $item;
       }
       elseif (!empty($v['delete'])) {
         // delete existing item
-        if (is_numeric($v['mlid'])) {
-          menu_link_delete($v['mlid']);
+        if (is_numeric($item['mlid'])) {
+          menu_link_delete($item['mlid']);
         }
         continue;
       }
@@ -451,11 +453,12 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
           // Using != instead of !== to support '5' == 5.
           /** @noinspection TypeUnsafeComparisonInspection */
           if ($v[$field] != $element[$field]['#default_value']) {
-            $element['#item'][$field] = $v[$field];
-            $updated_items[$item_key] = $element['#item'];
+            $item[$field] = $v[$field];
+            $updated_items[$item_key] = $item;
           }
         }
       }
+
       // Hidden is a special case, the value needs to be inverted.
       // Besides, while we operate with boolean, the database wants numeric 0/1.
       if ($v['enabled'] xor $element['enabled']['#default_value']) {
