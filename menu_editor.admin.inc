@@ -434,7 +434,7 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
         if (!is_string($v['link_path']) || empty($v['link_path'])) {
           continue;
         }
-        $element['#item']['menu_name'] = $menu_name;
+        $item['menu_name'] = $menu_name;
         // Set all fields in this menu item.
         foreach ($fields as $field) {
           // Check if field is set since some fields could not be NULL when
