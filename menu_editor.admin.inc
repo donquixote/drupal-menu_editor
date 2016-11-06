@@ -130,6 +130,12 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
       if (isset($item['options']['fragment'])) {
         $path .= '#' . $item['options']['fragment'];
       }
+
+      /* @see menu_firstchild_form_alter() */
+      if (isset($item['href']) && '<firstchild>' === $item['href']) {
+        $item['hidden'] = !empty($item['options']['unaltered_hidden']);
+      }
+
       $default_values = array(
         'link_title' => $item['link_title'],
         'link_path' => $path,
