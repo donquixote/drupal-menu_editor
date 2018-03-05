@@ -91,6 +91,8 @@ function me_node_creation_node_insert($node) {
  * Implements hook_crumbs_plugins()
  *
  * @param crumbs_InjectedAPI_hookCrumbsPlugins $api
+ *
+ * @throws \Exception
  */
 function me_node_creation_crumbs_plugins($api) {
   $api->monoPlugin();
