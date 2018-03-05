@@ -272,6 +272,7 @@ function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $mult
     // and to reduce page size.
     '#type' => 'textfield',
     '#size' => 4,
+    /* @see _menu_editor_valid_weight() */
     '#element_validate' => array('_menu_editor_valid_weight'),
   );
   $element['mlid'] = array(
