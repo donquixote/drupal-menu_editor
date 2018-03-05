@@ -473,8 +473,8 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
       // Besides, while we operate with boolean, the database wants numeric 0/1.
       if ($v['enabled'] xor $element['enabled']['#default_value']) {
         // Checkbox for 'enabled' was changed.
-        $element['#item']['hidden'] = empty($v['enabled']) ? 1 : 0;
-        $updated_items[$item_key] = $element['#item'];
+        $item['hidden'] = empty($v['enabled']) ? 1 : 0;
+        $updated_items[$item_key] = $item;
       }
       else {
         // Checkbox for 'enabled' was not changed.
