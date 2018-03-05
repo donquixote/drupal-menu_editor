@@ -421,6 +421,12 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
 
   $menu_name = $form['#menu']['menu_name'];
 
+  /**
+   * @var array[] $updated_items
+   *   Array to collect items that need to be newly created or updated.
+   *   Format: $[$item_key] = $item
+   *   with $item_key like 'mlid-1234' or 'mlid-new0'.
+   */
   $updated_items = array();
   $fields = array('expanded', 'weight', 'plid', 'link_title', 'link_path', 'description');
 
@@ -447,6 +453,7 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
             $item[$field] = $v[$field];
           }
         }
+        // Add item to be newly created.
         $updated_items[$item_key] = $item;
       }
       elseif (!empty($v['delete'])) {
@@ -464,6 +471,7 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
           /** @noinspection TypeUnsafeComparisonInspection */
           if ($v[$field] != $element[$field]['#default_value']) {
             $item[$field] = $v[$field];
+            // Item was modified,
             $updated_items[$item_key] = $item;
           }
         }
