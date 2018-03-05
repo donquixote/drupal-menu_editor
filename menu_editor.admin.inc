@@ -479,8 +479,8 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
       if (!empty($form['#multilingual_menu'])) {
         $langcode = isset($element['language']['#default_value']) ? $element['language']['#default_value'] : $element['language']['#value'];
         if ($v['language'] !== $langcode) {
-          $element['#item']['language'] = $v['language'];
-          $updated_items[$item_key] = $element['#item'];
+          $item['language'] = $v['language'];
+          $updated_items[$item_key] = $item;
         }
       }
       // description is a special case
