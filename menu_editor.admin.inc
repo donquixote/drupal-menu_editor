@@ -228,6 +228,8 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
  * @param bool $multilingual_menu
  *
  * @return array
+ *
+ * @see menu_edit_item()
  */
 function _menu_editor_overview_tree_form_item($item_mlid, $default_values, $multilingual_menu = FALSE) {
 
