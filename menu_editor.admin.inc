@@ -151,7 +151,9 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
 
       $form[$item_key]['#item'] = $item;
       $form[$item_key]['#attributes'] = $item['hidden'] ? array('class' => 'menu-disabled') : array('class' => 'menu-enabled');
-      $form[$item_key]['drag']['#markup'] = l($item['title'], $item['href'], $item['localized_options']) . ($item['hidden'] ? ' ('. t('disabled') .')' : '');
+      $form[$item_key]['drag']['#markup'] = ''
+        . l($item['title'], $item['href'], $item['localized_options'])
+        . _menu_editor_link_label_suffix($item);
 
       // Include i18n support.
       if (module_exists('i18n_menu')) {
@@ -221,6 +223,41 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
   }
   return $max_root_weight;
 }
+
+/**
+ * Creates a label suffix with additional information about a menu link.
+ *
+ * This replicates a planned feature for Drupal core, which is discussed in
+ * @link https://www.drupal.org/project/drupal/issues/460408
+ *
+ * @param array $item
+ *   An array representing the menu link item.
+ *
+ * @return string
+ */
+function _menu_editor_link_label_suffix(array $item) {
+
+  $parts = [];
+
+  if ($item['hidden']) {
+    $parts[] = t('disabled');
+  }
+
+  if (!empty($item['node_unpublished'])) {
+    $parts[] = t('unpublished');
+  }
+
+  if ($item['link_path'] === 'user' && $item['module'] === 'system') {
+    $parts[] = t('logged in users only');
+  }
+
+  if ([] !== $parts) {
+    return ' (' . implode(', ', $parts) . ')';
+  }
+
+  return '';
+}
+
 
 /**
  * @param int|string $item_mlid
