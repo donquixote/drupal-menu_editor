@@ -431,7 +431,16 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
   $fields = array('expanded', 'weight', 'plid', 'link_title', 'link_path', 'description');
 
   foreach ($form_values as $item_key => $v) {
-    if (isset($form[$item_key]['#item'])) {
+
+    if (!isset($form[$item_key]['#item'])) {
+      // Either $form[$item_key] does not exist, or $form[$item_key]['#item']
+      // does not exist. This occurs if the key is from a form element that does
+      // not represent a menu link.
+      continue;
+    }
+
+    // Keep indentation level to reduce git noise.
+    if (true) {
       $element = $form[$item_key];
       $original_item = $item = $element['#item'];
 
