@@ -183,12 +183,13 @@ function me_node_creation_title($type_arg, $item) {
  * Access callback for node/add/%node_type/mlid/%menu_editor_mlid
  *
  * @param object|mixed $type
+ *   A node type object, as returned from @see node_type_load()
  *
  * @return bool
  */
 function me_node_creation_create_node_access($type) {
   if (!is_object($type)) {
-    ddebug_backtrace();
+    // One should assume that this case never happens..
     return FALSE;
   }
   return node_access('create', $type->type);
