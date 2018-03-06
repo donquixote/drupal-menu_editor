@@ -18,7 +18,6 @@
  * @see menu_editor_overview_form_submit()
  */
 function menu_editor_overview_form(array $form, array &$form_state, array $menu) {
-  $form['#attached']['css'] = array(drupal_get_path('module', 'menu') . '/menu.css');
   $sql = "
     SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.delivery_callback, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
     FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
