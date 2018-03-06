@@ -6,10 +6,13 @@
 function menu_editor_menu() {
   $items['admin/structure/menu/manage/%menu/poweredit'] = array(
     'title' => 'Power Edit',
+    /* @see drupal_get_form() */
     'page callback' => 'drupal_get_form',
+    /* @see menu_editor_overview_form() */
     'page arguments' => array('menu_editor_overview_form', 4),
     // 'title callback' => 'menu_editor_overview_title',
     // 'title arguments' => array(3),
+    /* @see menu_editor_form_access() */
     'access callback' => 'menu_editor_form_access',
     'access arguments' => array(4),
     'type' => MENU_LOCAL_TASK,
