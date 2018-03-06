@@ -6,7 +6,7 @@
  * Shows for one menu the menu items accessible to the current user and
  * relevant operations.
  *
- * @param array $form
+ * @param array $old_form
  * @param array $form_state
  * @param array $menu
  *
@@ -17,7 +17,7 @@
  * @see menu_editor_overview_form_validate()
  * @see menu_editor_overview_form_submit()
  */
-function menu_editor_overview_form(array $form, array &$form_state, array $menu) {
+function menu_editor_overview_form(array $old_form, array &$form_state, array $menu) {
 
   if (!empty($_POST['menu_editor:max_input_vars_reached'])) {
     drupal_set_message(
