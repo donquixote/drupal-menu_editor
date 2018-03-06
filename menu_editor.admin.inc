@@ -106,8 +106,11 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
   foreach ($tree as $data) {
     $title = '';
     $item = $data['link'];
-    // Don't show callbacks; these have $item['hidden'] < 0.
-    if ($item && $item['hidden'] >= 0) {
+
+    if (!$item || $item['hidden'] < 0) {
+      // Don't show callbacks; these have $item['hidden'] < 0.
+    }
+    else {
       $item_key = 'mlid-' . $item['mlid'];
       // @todo This is bogus. The value might be in $form_state['input'][$item_key], but never in $form_state[$item_key].
       $weight = isset($form_state[$item_key]['weight']) ? $form_state[$item_key]['weight'] : $item['weight'];
