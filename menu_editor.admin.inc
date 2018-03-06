@@ -139,10 +139,14 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
         $item['hidden'] = !empty($item['options']['unaltered_hidden']);
       }
 
+      $item['description'] = isset($item['options']['attributes']['title'])
+        ? $item['options']['attributes']['title']
+        : '';
+
       $default_values = array(
         'link_title' => $item['link_title'],
         'link_path' => $path,
-        'description' => isset($item['options']['attributes']['title']) ? $item['options']['attributes']['title'] : '',
+        'description' => $item['description'],
         'enabled' => !$item['hidden'],
         'expanded' => $item['expanded'],
         'weight' => $weight,
@@ -547,10 +551,6 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
           $updated_items[$item_key] = $item;
         }
       }
-      // description is a special case
-      if (isset($updated_items[$item_key]['description'])) {
-        $updated_items[$item_key]['options']['attributes']['title'] = $updated_items[$item_key]['description'];
-      }
     }
   }
 
@@ -619,6 +619,16 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
       }
       else {
         unset($item['plid']);
+      }
+    }
+
+    if ('' !== $item['description']) {
+      $item['options']['attributes']['title'] = $item['description'];
+    }
+    else {
+      unset($item['options']['attributes']['title']);
+      if (empty($item['options']['attributes'])) {
+        unset($item['options']['attributes']);
       }
     }
 
