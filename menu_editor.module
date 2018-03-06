@@ -77,6 +77,30 @@ function menu_editor_theme() {
 }
 
 /**
+ * Implements hook_preprocess_THEMEHOOK
+ *
+ * @param array $variables
+ *
+ * @see theme_form()
+ */
+function menu_editor_preprocess_form(array &$variables) {
+  $form =& $variables['element'];
+
+  if (0
+    || !isset($form['#form_id'])
+    || 'menu_editor_overview_form' !== $form['#form_id']
+  ) {
+    return;
+  }
+
+  $form['#children'] = ''
+    . '<input type="hidden" name="menu_editor:max_input_vars_reached" value="1"/>'
+    . $form['#children']
+    . '<input type="hidden" name="menu_editor:max_input_vars_reached" value="0"/>'
+  ;
+}
+
+/**
  * Title callback for the menu overview page and links.
  *
  * @param array $menu

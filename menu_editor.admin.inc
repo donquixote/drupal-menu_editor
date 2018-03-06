@@ -18,6 +18,19 @@
  * @see menu_editor_overview_form_submit()
  */
 function menu_editor_overview_form(array $form, array &$form_state, array $menu) {
+
+  if (!empty($_POST['menu_editor:max_input_vars_reached'])) {
+    drupal_set_message(
+      t("The submitted form has more elements than supported by the server configuration."),
+      'warning');
+
+    watchdog(
+      'menu_editor',
+      'max_input_vars limit reached when trying to save a menu.',
+      array(),
+      WATCHDOG_WARNING);
+  }
+
   $sql = "
     SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.delivery_callback, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
     FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
