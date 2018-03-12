@@ -116,7 +116,6 @@ function menu_editor_overview_form(array $old_form, array &$form_state, array $m
 function _menu_editor_overview_tree_form(array &$form, array &$form_state, array $tree) {
   $max_root_weight = 0;
   foreach ($tree as $data) {
-    $title = '';
     $item = $data['link'];
 
     if (!$item || $item['hidden'] < 0) {
