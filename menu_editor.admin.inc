@@ -679,6 +679,8 @@ function menu_editor_overview_form_submit(array $form, array &$form_state) {
  * @return string
  *
  * @ingroup themeable
+ * @throws \Exception
+ *   from theme() call. Usually not going to happen.
  */
 function theme_menu_editor_overview_form(array $variables) {
   $form = $variables['form'];
