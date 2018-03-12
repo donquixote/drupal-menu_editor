@@ -255,7 +255,7 @@ function _menu_editor_overview_tree_form(array &$form, array &$form_state, array
  */
 function _menu_editor_link_label_suffix(array $item) {
 
-  $parts = [];
+  $parts = array();
 
   if ($item['hidden']) {
     $parts[] = t('disabled');
@@ -269,7 +269,7 @@ function _menu_editor_link_label_suffix(array $item) {
     $parts[] = t('logged in users only');
   }
 
-  if ([] !== $parts) {
+  if (array() !== $parts) {
     return ' (' . implode(', ', $parts) . ')';
   }
 
