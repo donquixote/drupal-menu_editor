@@ -125,9 +125,12 @@ function menu_editor_menu_link_load($mlid) {
     $query->addField('ml', 'weight', 'link_weight');
     $query->fields('m');
     $query->condition('ml.mlid', $mlid);
+    /** @noinspection NullPointerExceptionInspection */
     if ($item = $query->execute()->fetchAssoc()) {
       $_cache[$mlid] =& $item;
       $item['weight'] = $item['link_weight'];
+      // The data being unserialized here is not coming from user input.
+      /** @noinspection UnserializeExploitsInspection */
       $item['load_functions'] = unserialize($item['load_functions']);
       _menu_link_translate($item);
       return $item;

@@ -44,6 +44,7 @@ function me_path_autocomplete_menu() {
  */
 function me_path_autocomplete($string = NULL) {
   $args = func_get_args();
+  /** @noinspection SuspiciousAssignmentsInspection */
   $string = implode('/', $args);
 
   $matches = _me_path_autocomplete_get_matches($string);
